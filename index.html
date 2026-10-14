@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>БУЛАЙЗ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="icon" href="icon.png" type="image/x-icon">
+    <link rel="icon" href="icon.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="icon.png" sizes="64x64" type="image/png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('background.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .header {
+            position: relative;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            border: 2px solid #4fc3f7;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: transparent;
+            border: none;
+            color: #4fc3f7;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+            padding: 0;
+        }
+        
+        .settings-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .settings-btn.rotated {
+            transform: rotate(45deg);
+        }
+        
+        .header h1 {
+            font-size: 3.5rem;
+            color: #4fc3f7;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            color: #e1f5fe;
+            margin-bottom: 20px;
+        }
+        
+        .info-block {
+            background: rgba(14, 15, 17, 0.85);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .info-block h3 {
+            color: #4fc3f7;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4fc3f7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .info-text {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .info-text p {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .schedule {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(30, 136, 229, 0.15);
+            border-radius: 8px;
+            border-left: 4px solid #4fc3f7;
+            transition: all 0.3s ease;
+        }
+        
+        .schedule-item:hover {
+            background: rgba(30, 136, 229, 0.25);
+            transform: translateX(5px);
+        }
+        
+        .schedule-day {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #e1f5fe;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .schedule-time {
+            font-weight: 500;
+            color: #4fc3f7;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .lunch-break {
+            display: block;
+            font-size: 0.9rem;
+            color: #b0bec5;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .lunch-break.active {
+            color: #ff6b6b;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .day-off {
+            color: #f44336;
+        }
+        
+        .current-day {
+            background: rgba(79, 195, 247, 0.2);
+            border-left: 4px solid #ff9800;
+        }
+        
+        .current-day .schedule-day {
+            color: #ffa828;
+        }
+        
+        .map-container {
+            flex: 1;
+            min-width: 300px;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .contact-link {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #4fc3f7;
+        }
+        
+        .contact-link:hover {
+            color: #81d4fa;
+            text-decoration: underline;
+        }
+        
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .icon {
+            width: 40px;
+            height: 40px;
+            background: #1eb0f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background: rgba(14, 15, 17, 0.85);
+            border-radius: 10px;
+            width: 30%;
+            font-size: 1rem;
+        }
+        
+        /* Модальное окно настроек */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(14, 15, 17, 0.95);
+            border-radius: 15px;
+            border: 2px solid #4fc3f7;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: rgba(79, 195, 247, 0.1);
+            border-bottom: 1px solid #4fc3f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            color: #4fc3f7;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-body {
+            display: flex;
+            min-height: 300px;
+        }
+        
+        .tabs {
+            width: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid #444;
+            padding: 20px 4px;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            color: #b0bec5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .tab.active {
+            color: #4fc3f7;
+            border-left: 3px solid #4fc3f7;
+            background: rgba(79, 195, 247, 0.1);
+        }
+        
+        .tab-content {
+            flex: 1;
+            padding: 20px;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .settings-item {
+            margin-bottom: 25px;
+        }
+        
+        .settings-item h4 {
+            color: #e1f5fe;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4fc3f7;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            color: #e1f5fe;
+        }
+        
+        /* Стили для гирлянды */
+        #gir {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-image: url('https://i.imgur.com/sHI3XK1.png');
+            opacity: 1;
+            height: 62px;
+            width: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+            display: none;
+        }
+        
+        .gir_1 {
+            background-position: 0 0;
+        }
+        
+        .gir_2 {
+            background-position: 0 -62px;
+        }
+        
+        .gir_3 {
+            background-position: 0 -124px;
+        }
+        
+        /* Стили для анимации эмодзи */
+        .emoji {
+            position: fixed;
+            top: -50px;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 999;
+            user-select: none;
+        }
+        
+        /* Скрыть ошибки консоли */
+        iframe {
+            pointer-events: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .settings-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.8rem;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .info-content {
+                flex-direction: column;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .schedule-time {
+                align-self: flex-end;
+            }
+            
+            .map-container {
+                height: 250px;
+            }
+            
+            .footer {
+                width: 80%;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+            
+            .tabs {
+                width: 120px;
+            }
+        }
+
+/* Основной контейнер заголовка */
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Строка с логотипом и названием */
+.title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+
+/* Логотип */
+.header-logo {
+    height: 60px;
+    width: 60px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+/* Заголовок "БУЛАЙЗ" */
+.header h1 {
+    font-size: 3.5rem;
+    color: #4fc3f7;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+/* Подзаголовок - под ВСЕЙ строкой с логотипом и названием */
+.header h2 {
+    font-size: 1.8rem;
+    color: #e1f5fe;
+    margin: 0;
+    text-align: center;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .title-row {
+        gap: 12px;
+        margin-bottom: 3px;
+    }
+    
+    .header-logo {
+        height: 50px;
+        width: 50px;
+    }
+    
+    .header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .header h2 {
+        font-size: 1.2rem;
+    }
+}
+
+
+/* Добавьте эти стили в существующий CSS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.stat-box {
+    background: rgba(79, 195, 247, 0.1);
+    border: 1px solid rgba(79, 195, 247, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    background: rgba(79, 195, 247, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(79, 195, 247, 0.2);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #b0bec5;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4fc3f7;
+    margin: 10px 0;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: rgba(79, 195, 247, 0.5);
+    font-size: 1.2rem;
+}
+
+.stats-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #4fc3f7;
+}
+
+.stats-info p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #b0bec5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-info i {
+    color: #4fc3f7;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+}
+
+
+/* Стили для новогодних выходных - ПЕРЕПИСАННЫЕ */
+.new-year-schedule-item {
+    background: rgba(255, 255, 255, 0.1); /* Белый вместо желтого */
+    border-left: 4px solid #ffffff; /* Белый вместо желтого */
+    margin-bottom: 15px;
+    position: relative;
+}
+
+/* Убираем ховер ТОЛЬКО для новогодней строчки */
+.new-year-schedule-item:hover {
+    background: rgba(255, 255, 255, 0.1); /* Оставляем тот же цвет */
+    transform: none; /* Убираем поднятие */
+}
+
+/* Остальные строчки работают как обычно */
+.schedule-item:not(.new-year-schedule-item):not(.victory-day-schedule-item):hover {
+    background: rgba(30, 136, 229, 0.25);
+    transform: translateX(5px);
+}
+
+.new-year-schedule-item .schedule-day {
+    color: #ffffff; /* Белый вместо желтого */
+    font-weight: bold;
+}
+
+.new-year-schedule-item .schedule-time {
+    color: #ffffff; /* Белый вместо желтого */
+    background: rgba(255, 255, 255, 0.15); /* Белый вместо желтого */
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+/* Убираем старый блок с поздравлением и делаем новый */
+.new-year-greeting-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+
+.new-year-greeting-compact p {
+    margin: 3px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.new-year-greeting-compact p:first-child {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.new-year-greeting-compact {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: center;
+    margin: auto;
+}
+
+.new-year-greeting-compact i {
+    margin-right: 8px;
+	font-size: 18px;
+    color: #ffffff;
+}
+
+.new-year-icon {
+    color: #ffffff; /* Белый вместо желтого */
+    animation: sparkle 1.5s infinite alternate;
+}
+
+/* Класс для фонового изображения новогодней строчки */
+.new-year-with-bg {
+    background-image: url('fon-newyear.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.new-year-with-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.new-year-with-bg > * {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes sparkle {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+
+/* === Стили для 9 мая === */
+.victory-day-schedule-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid #4caf50; /* Зеленый цвет для 9 мая */
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.victory-day-schedule-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
+}
+
+.victory-day-schedule-item .schedule-day {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.victory-day-schedule-item .schedule-time {
+    color: #ffffff;
+    background: rgba(76, 175, 80, 0.3); /* Зеленоватый фон для плашки выходного */
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.victory-day-with-bg {
+    background-image: url('fon-9may.jpg'); /* Картинка для 9 мая */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.victory-day-with-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Затемнение как и для НГ */
+    z-index: 1;
+}
+
+.victory-day-with-bg > * {
+    position: relative;
+    z-index: 2;
+}
+/* === КОНЕЦ стилей для 9 мая === */
+
+
+/* Адаптивность для новогоднего блока */
+@media (max-width: 768px) {
+    .new-year-schedule-item .schedule-time, .victory-day-schedule-item .schedule-time {
+        margin-right: 10px;
+    }
+    
+    .new-year-greeting-compact {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+.tank-icon {
+    width: 50px;         /* Ширина как у иконки */
+    height: auto;        /* Пропорциональная высота */
+    margin-right: 1px;   /* Отступ от текста */
+    vertical-align: middle; /* Выравнивание по центру строки */
+    /* Если картинка смотрит вправо, а нужно влево, добавь это: */
+    transform: scaleX(-1); 
+}
+    </style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, update, increment, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1534fD3L6AOIuBWtqojI1LKCWeCmYDHg",
+    authDomain: "bullace-7259c.firebaseapp.com",
+    databaseURL: "https://bullace-7259c-default-rtdb.firebaseio.com",
+    projectId: "bullace-7259c",
+    storageBucket: "bullace-7259c.firebasestorage.app",
+    messagingSenderId: "331828689370",
+    appId: "1:331828689370:web:f02ddc7ae54a8d6acfe8e3"
+  };
+
+  // Инициализация Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  
+  // Экспортируем для основного скрипта
+  window.firebaseDatabase = database;
+  window.firebaseRef = ref;
+  window.firebaseSet = set;
+  window.firebaseUpdate = update;
+  window.firebaseIncrement = increment;
+  window.firebaseOnValue = onValue;
+  window.firebaseGet = get;
+</script>
+</head>
+<body>
+    <div class="gir_1" id="gir"></div>
+    
+    <div id="emojiContainer"></div>
+    
+    <div class="copy-notification" id="copyNotification">Номер скопирован!</div>
+    
+    <div class="container">
+<div class="header">
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+    
+    <div class="header-content">
+        <div class="title-row">
+            <img src="icon.png" alt="Логотип БУЛАЙЗ" class="header-logo">
+            <h1>БУЛАЙЗ</h1>
+        </div>
+        <h2>СПУТНИКОВОЕ ТЕЛЕВИДЕНИЕ</h2>
+    </div>
+</div>
+
+		<div class="info-block">
+			<h3><i class="fas fa-store"></i> Магазин "БУЛАЙЗ"</h3>
+			<div class="info-content">
+				<div class="info-text">
+					<p><i class="fas fa-clock"></i> <strong>График работы:</strong></p>
+					
+					<div class="schedule" id="scheduleContainer">
+						<div class="schedule-item">
+							<div class="schedule-day">
+								<i class="fas fa-calendar-day"></i>
+								<span>Понедельник - Пятница</span>
+							</div>
+							<div class="schedule-time">11:00 - 19:00
+								<span class="lunch-break" id="lunchBreak">Обед: 14:00 - 15:00</span>
+							</div>
+						</div>
+						
+						<div class="schedule-item">
+							<div class="schedule-day">
+								<i class="fas fa-calendar-day"></i>
+								<span>Суббота</span>
+							</div>
+							<div class="schedule-time" style="margin-right: 15px;">11:00 - 17:00</div>
+						</div>
+						
+						<div class="schedule-item day-off">
+							<div class="schedule-day">
+								<i class="fas fa-calendar-times"></i>
+								<span>Воскресенье</span>
+							</div>
+							<div class="schedule-time" style="margin-right: 20px;">Выходной</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+        
+        <div class="info-block">
+            <h3><i class="fas fa-phone"></i> Контакты</h3>
+            <div class="info-content">
+                <div class="info-text">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <strong>Телефон:</strong> 
+                                <a href="tel:+78216721782" class="contact-link" id="phoneLink">(8216) 72-17-82</a>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <strong>E-mail:</strong> 
+                                <a href="mailto:uhta@bk.ru" class="contact-link">uhta@bk.ru</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-block">
+            <h3><i class="fas fa-map-marker-alt"></i> Как нас найти</h3>
+            <div class="info-content">
+                <div class="info-text">
+                    <p><i class="fas fa-location-dot"></i> <strong>Адрес:</strong> Республика Коми, г. Ухта, проспект Ленина, д. 33</p>
+                    <p>Вход в магазин "БУЛАЙЗ" расположен со стороны двора.</p>
+                </div>
+                <div class="map-container">
+                    <iframe src="https://yandex.ru/map-widget/v1/?ll=53.669794%2C63.565398&mode=whatshere&whatshere%5Bpoint%5D=53.669794%2C63.565398&whatshere%5Bzoom%5D=17&z=18" frameborder="0" allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Copyright © Булайз, 1996 - <span id="currentYear">1996</span>. Все права защищены.</p>
+    </div>
+    
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Настройки</h3>
+                <button class="close-btn" id="closeModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <div class="tab active" data-tab="settings">Настройки</div>
+					<div class="tab" data-tab="stats">Статистика</div>
+                    <div class="tab" data-tab="about">О сайте</div>
+                </div>
+                <div class="tab-content active" id="settings-tab">
+                    <div class="settings-item" id="girSettingsItem">
+                        <h4>Гирлянда</h4>
+                        <label class="toggle-label">
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="girToggle">
+                                <span class="toggle-slider"></span>
+                            </span>
+                            <span>Включить гирлянду</span>
+                        </label>
+                        <p id="girSeasonMessage" style="font-size: 0.9rem; color: #b0bec5; margin-top: 5px;"></p>
+                    </div>
+                    <div class="settings-item">
+                        <h4>Анимация эмодзи</h4>
+                        <label class="toggle-label">
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="emojiToggle">
+                                <span class="toggle-slider"></span>
+                            </span>
+                            <span>Включить анимацию</span>
+                        </label>
+                    </div>
+                </div>
+				<div class="tab-content" id="stats-tab">
+					<div class="settings-item">
+						<h4><i class="fas fa-chart-line"></i> Статистика посещений</h4>
+						<div class="stats-grid">
+							<div class="stat-box">
+								<div class="stat-label">Сейчас онлайн</div>
+								<div class="stat-value" id="onlineUsersStat">0</div>
+							</div>
+							<div class="stat-box">
+								<div class="stat-label">Сегодня</div>
+								<div class="stat-value" id="dailyVisitsStat">0</div>
+							</div>
+							<div class="stat-box">
+								<div class="stat-label">Всего посещений</div>
+								<div class="stat-value" id="totalVisitsStat">0</div>
+							</div>
+							<div class="stat-box">
+								<div class="stat-label">Максимум за день</div>
+								<div class="stat-value" id="maxDailyStat">0</div>
+							</div>
+						</div>
+						<div class="stats-info">
+							<p><i class="fas fa-info-circle"></i> Обновляется в реальном времени</p>
+							<p><i class="fas fa-clock"></i> Данные за последние 30 дней</p>
+						</div>
+					</div>
+				</div>
+                <div class="tab-content" id="about-tab">
+                    <div class="settings-item">
+                        <h4>О сайте</h4>
+                        <p>Сайт компании "БУЛАЙЗ" - спутниковое телевидение.</p>
+                        <p>Работаем с 1996 года в городе Ухта.</p>
+                        <p>Профессиональная установка и обслуживание спутникового и цифрового телевидения.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Очистка консоли при загрузке
+        //console.clear();
+		
+		//console.log('%c'+'Это грустные, унылые, страшные красные ошибки, которые способен решить только Господь Бог, но я не он, поэтому да.', 'color: #ff8c00');
+		console.log('%c'+'Ошибки исчезли...👀 Какая прелесть!✨', 'color: #ff8c00');
+		console.log('%c'+'Версия сайта: v1.5.3', 'color: #00a2ff');
+		
+		window.emojiInterval = null;
+        
+        // Определение текущего времени года
+        const date = new Date();
+        const month = date.getMonth();
+        const isWinter = (month === 0 || month === 1 || month === 11);
+		
+// Функция для добавления новогоднего графика
+function addNewYearSchedule() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentDate = today.getDate();
+    const currentYear = today.getFullYear();
+    
+    const isNewYearHoliday = (currentMonth === 0 && (currentDate === 1 || currentDate === 2));
+    
+    if (!isNewYearHoliday) return;
+    
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    if (!scheduleContainer) return;
+    
+    // Создаем элемент для новогодних выходных
+    const newYearItem = document.createElement('div');
+    newYearItem.className = 'schedule-item new-year-schedule-item new-year-with-bg';
+    
+    // HTML структура: Новый год -> Поздравление -> Выходной (справа)
+    newYearItem.innerHTML = `
+        <div class="new-year-greeting-container">
+            <div class="schedule-day">
+                <i class="fas fa-star new-year-icon"></i>
+                <span>Новый год ${currentYear}</span>
+            </div>
+            <div class="new-year-greeting-compact">
+                <p><i class="fas fa-glass-cheers"> С Новым ${currentYear} годом!</i></p>
+				<p>Магазин не работает 1 и 2 января.🎄</p>
+				<p>Отдыхайте, веселитесь, набирайтесь сил!🎉</p>
+				<p>С праздником, дорогие друзья!✨</p>
+            </div>
+        </div>
+        <div class="schedule-time">Выходной</div>
+    `;
+    
+    scheduleContainer.insertBefore(newYearItem, scheduleContainer.firstChild);
+}
+
+// Функция для добавления выходного 9 мая
+function addVictoryDaySchedule() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentDate = today.getDate();
+    
+    // Месяцы в JS начинаются с 0, поэтому май это 4
+    const isVictoryDay = (currentMonth === 4 && currentDate === 9);
+    
+    if (!isVictoryDay) return;
+    
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    if (!scheduleContainer) return;
+    
+    // Создаем элемент для выходного 9 мая
+    const victoryDayItem = document.createElement('div');
+    victoryDayItem.className = 'schedule-item victory-day-schedule-item victory-day-with-bg';
+    
+    // HTML структура: 9 Мая -> Поздравление -> Выходной (справа)
+    victoryDayItem.innerHTML = `
+        <div class="new-year-greeting-container">
+            <div class="schedule-day">
+				<img src="tank.png" alt="Танк" class="tank-icon">
+                <span>9 мая — День Победы!</span>
+            </div>
+            <div class="new-year-greeting-compact">
+                <p><i class="fas fa-medal" style="color: #ffffff;"> С Днём Великой Победы!</i></p>
+                <p>Желаем мирного неба над головой и безграничного счастья.🕊️</p>
+                <p>Крепкого здоровья, любви и благополучия вам и вашим близким!⭐</p>
+            </div>
+        </div>
+        <div class="schedule-time">Выходной</div>
+    `;
+    
+    scheduleContainer.insertBefore(victoryDayItem, scheduleContainer.firstChild);
+}
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.enableTracking = true;//бд / db
+    
+    // ВЫЗОВ НОВОГОДНЕЙ ФУНКЦИИ
+    addNewYearSchedule();
+    // ВЫЗОВ ФУНКЦИИ ДЛЯ 9 МАЯ
+    addVictoryDaySchedule();
+    
+    const date = new Date();
+    const month = date.getMonth();
+    const currentDate = date.getDate();
+    const isWinter = (month === 0 || month === 1 || month === 11);
+    
+    // Проверяем, сегодня 1 или 2 января
+    const isNewYearHoliday = (month === 0 && (currentDate === 1 || currentDate === 2));
+    // Проверяем, сегодня 9 мая
+    const isVictoryDay = (month === 4 && currentDate === 9);
+    
+    // Подсветка текущего дня недели
+    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const today = new Date().getDay();
+    const todayName = days[today];
+    const currentHour = date.getHours();
+    const currentMinutes = date.getMinutes();
+    const currentTime = currentHour * 60 + currentMinutes;
+    
+    const scheduleItems = document.querySelectorAll('.schedule-item');
+    const lunchBreak = document.getElementById('lunchBreak');
+    
+    // Проверка обеденного времени (14:00-15:00 в будни)
+    const isWeekday = (today >= 1 && today <= 5);
+    const isLunchTime = (currentTime >= 14*60 && currentTime < 15*60);
+    
+    if (isWeekday && isLunchTime && !isNewYearHoliday && !isVictoryDay) {
+        lunchBreak.classList.add('active');
+    }
+    
+    // Если 1-2 января ИЛИ 9 мая - НЕ подсвечиваем обычные дни недели
+    if (!isNewYearHoliday && !isVictoryDay) {
+        // Подсветка текущего дня (только если не новогодние праздники и не 9 мая)
+        scheduleItems.forEach(item => {
+            // Пропускаем праздничные элементы
+            if (item.classList.contains('new-year-schedule-item') || item.classList.contains('victory-day-schedule-item')) return;
+            
+            const dayElement = item.querySelector('.schedule-day span');
+            if (dayElement) {
+                const dayText = dayElement.textContent;
+                
+                if (todayName === 'Воскресенье' && dayText.includes('Воскресенье')) {
+                    item.classList.add('current-day');
+                } 
+                else if (todayName !== 'Воскресенье' && todayName !== 'Суббота' && dayText.includes('Понедельник - Пятница')) {
+                    item.classList.add('current-day');
+                }
+                else if (todayName === 'Суббота' && dayText.includes('Суббота')) {
+                    item.classList.add('current-day');
+                }
+            }
+        });
+    }
+    
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    initializeSettings();
+    checkAndStartEmojiAnimation();
+});
+    </script>
+    <script>
+        
+        // Управление модальным окном
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModal = document.getElementById('closeModal');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        settingsBtn.addEventListener('click', function() {
+            settingsModal.classList.add('active');
+            settingsBtn.classList.add('rotated');
+        });
+        
+        closeModal.addEventListener('click', function() {
+            settingsModal.classList.remove('active');
+            settingsBtn.classList.remove('rotated');
+        });
+        
+        settingsModal.addEventListener('click', function(e) {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('active');
+                settingsBtn.classList.remove('rotated');
+            }
+        });
+        
+        // Переключение вкладок
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Убираем активный класс у всех вкладок и контента
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Добавляем активный класс текущей вкладке и контенту
+                this.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Настройки гирлянды и анимации
+        const girToggle = document.getElementById('girToggle');
+        const emojiToggle = document.getElementById('emojiToggle');
+        const gir = document.getElementById('gir');
+        const girSettingsItem = document.getElementById('girSettingsItem');
+        const girSeasonMessage = document.getElementById('girSeasonMessage');
+        
+        let girAnimationInterval;
+        let emojiInterval;
+        
+// Эмодзи для разных времен года - идея взята с проекта: https://t.me/CWTools/2/28
+
+const emojis1 = ['🍁','🍂','🌰','🎃']; // Эмодзи для осени.
+const emojis2 = ['❄️','🍊','🎁','🍪','⭐️','🧊','⛄️','🎄','🥶','🎉','🌟','✨','🐧','💙','🥂','🍾']; // Эмодзи для зимы.
+const emojis3 = ['💧','🌼','🌸','🌷','💐','🌹','🌺','🐣','🌻','🍃','🌺','🐝','🦋']; // Эмодзи для весны.
+const emojis4 = ['🍦','☀️','🍎','🥥','🍍','🍓','🍒','🍉','🍈','🍋','🥭','🍏','🍹','🥝','🍸','🍨','🍧','🍇','🍑','🍌','💚','🧡','💛','🐠','🧃','🥤','🧉']; // Эмодзи для лета.
+        
+        // Анимация новогодней гирлянды
+        function girNewYearsAnimation() {
+            let nums = gir.className;
+            if (nums === 'gir_1') { gir.className = 'gir_2'; }
+            else if (nums === 'gir_2') { gir.className = 'gir_3'; }
+            else if (nums === 'gir_3') { gir.className = 'gir_1'; }
+        }
+        
+        // Создание эмодзи
+        function createEmoji() {
+            const emoji = document.createElement('div');
+            emoji.classList.add('emoji');
+            
+            // Определяем эмодзи в зависимости от времени года
+            let emojis;
+            if (isWinter) {
+                emojis = emojis2;
+            } else if (month >= 2 && month <= 4) {
+                emojis = emojis3;
+            } else if (month >= 5 && month <= 7) {
+                emojis = emojis4;
+            } else {
+                emojis = emojis1;
+            }
+            
+            // Выбираем случайный эмодзи
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            emoji.innerText = randomEmoji;
+            
+            // Устанавливаем случайную позицию
+            const xPosition = Math.random() * (window.innerWidth - 50);
+            emoji.style.left = `${xPosition}px`;
+            emoji.style.top = `-30px`;
+            
+            document.getElementById('emojiContainer').appendChild(emoji);
+            
+            // Анимация падения
+            let fallDuration = Math.random() * 3 + 2;
+            emoji.animate([
+                { transform: 'translateY(0)' },
+                { transform: `translateY(${window.innerHeight + 50}px)` }
+            ], {
+                duration: fallDuration * 1000,
+                easing: 'linear',
+            });
+            
+            // Удаляем эмодзи после анимации
+            setTimeout(() => {
+                if (emoji.parentNode) {
+                    emoji.remove();
+                }
+            }, fallDuration * 1000);
+        }
+        
+        // Инициализация настроек из localStorage
+		function initializeSettings() {
+			// Если зима, показываем настройку гирлянды
+			if (isWinter) {
+				girSettingsItem.style.display = 'block';
+				girSeasonMessage.textContent = 'Доступно только зимой';
+				
+				const savedGirData = localStorage.getItem('bullace_gir');
+				const currentYear = date.getFullYear();
+				const currentMonth = month === 11 ? 12 : (month + 1); // 12, 1, 2
+				
+				let shouldTurnOn = true;
+				
+				if (savedGirData) {
+					const parts = savedGirData.split(',');
+					if (parts.length === 3) {
+						const savedState = parts[0];
+						const savedMonth = parseInt(parts[1]);
+						const savedYear = parseInt(parts[2]);
+						
+						// Если сохраненные данные для текущей зимы - используем сохраненное состояние
+						if (savedMonth === currentMonth && savedYear === currentYear) {
+							shouldTurnOn = savedState === 'true';
+						}
+						// Если старая зима (например, декабрь 2024, а сейчас январь 2025) - включаем
+						else if (
+							(savedMonth === 12 && savedYear === currentYear - 1 && currentMonth === 1) ||
+							(savedMonth === 1 && savedYear === currentYear && currentMonth === 2)
+						) {
+							// Это продолжение той же зимы - используем сохраненное состояние
+							shouldTurnOn = savedState === 'true';
+						}
+						// Иначе - новая зима, включаем
+					}
+				}
+				
+				girToggle.checked = shouldTurnOn;
+				
+				// Сохраняем данные для текущей зимы
+				localStorage.setItem('bullace_gir', `${shouldTurnOn},${currentMonth},${currentYear}`);
+				
+				// Запускаем или останавливаем гирлянду
+				if (shouldTurnOn) {
+					gir.style.display = 'block';
+					if (girAnimationInterval) clearInterval(girAnimationInterval);
+					girAnimationInterval = setInterval(girNewYearsAnimation, 500);
+				} else {
+					gir.style.display = 'none';
+					if (girAnimationInterval) clearInterval(girAnimationInterval);
+				}
+			} else {
+				// Если не зима - скрываем и выключаем
+				girSettingsItem.style.display = 'none';
+				gir.style.display = 'none';
+				if (girAnimationInterval) clearInterval(girAnimationInterval);
+				// НЕ меняем bullace_gir - сохраняем последнее состояние
+			}
+			
+			// Настройка анимации эмодзи остается без изменений
+			const savedEmojiState = localStorage.getItem('bullace_emoji');
+			if (savedEmojiState === 'true') {
+				emojiToggle.checked = true;
+			} else if (savedEmojiState === null) {
+				emojiToggle.checked = true;
+				localStorage.setItem('bullace_emoji', 'true');
+			}
+		}
+        
+		// Проверка и запуск анимации эмодзи
+		function checkAndStartEmojiAnimation() {
+			const savedEmojiState = localStorage.getItem('bullace_emoji');
+			
+			// Очищаем предыдущий интервал
+			if (window.emojiInterval) {
+				clearInterval(window.emojiInterval);
+				window.emojiInterval = null;
+			}
+			
+			// Удаляем все существующие эмодзи
+			const emojis = document.querySelectorAll('.emoji');
+			emojis.forEach(emoji => {
+				if (emoji.parentNode) {
+					emoji.remove();
+				}
+			});
+			
+			// Если анимация включена - запускаем
+			if (savedEmojiState === 'true' || savedEmojiState === null) {
+				// Создаем первый эмодзи сразу
+				createEmoji();
+				// Запускаем интервал
+				window.emojiInterval = setInterval(createEmoji, 500);
+			}
+		}
+        
+        /* Проверка и запуск гирлянды
+        function checkAndStartGirAnimation() {
+            const savedGirState = localStorage.getItem('bullace_gir');
+            if (savedGirState === 'true' && isWinter) {
+                gir.style.display = 'block';
+                girAnimationInterval = setInterval(girNewYearsAnimation, 500);
+            }
+        }*/
+        
+        // Обработчики тумблеров
+		girToggle.addEventListener('change', function() {
+			if (!isWinter) {
+				this.checked = false;
+				return;
+			}
+			
+			const currentYear = date.getFullYear();
+			const currentMonth = month === 11 ? 12 : (month + 1);
+			
+			if (this.checked) {
+				gir.style.display = 'block';
+				if (girAnimationInterval) clearInterval(girAnimationInterval);
+				girAnimationInterval = setInterval(girNewYearsAnimation, 500);
+				localStorage.setItem('bullace_gir', `true,${currentMonth},${currentYear}`);
+			} else {
+				gir.style.display = 'none';
+				if (girAnimationInterval) clearInterval(girAnimationInterval);
+				localStorage.setItem('bullace_gir', `false,${currentMonth},${currentYear}`);
+			}
+		});
+        
+		emojiToggle.addEventListener('change', function() {
+			if (window.emojiInterval) {
+				clearInterval(window.emojiInterval);
+				window.emojiInterval = null;
+			}
+			
+			const emojis = document.querySelectorAll('.emoji');
+			emojis.forEach(emoji => {
+				if (emoji.parentNode) {
+					emoji.remove();
+				}
+			});
+			
+			if (this.checked) {
+				createEmoji();
+				window.emojiInterval = setInterval(createEmoji, 500);
+				localStorage.setItem('bullace_emoji', 'true');
+			} else {
+				localStorage.setItem('bullace_emoji', 'false');
+			}
+		});
+        
+        // Обработка контактов
+        const phoneLink = document.getElementById('phoneLink');
+        const copyNotification = document.getElementById('copyNotification');
+        const phoneNumber = '(8216) 72-17-82';
+        const cleanPhoneNumber = '+78216721782';
+        
+        // Для компьютеров - копирование, для телефонов - звонок
+        phoneLink.addEventListener('click', function(e) {
+            // Проверяем, мобильное ли устройство
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (!isMobile) {
+                // На компьютере - копируем в буфер
+                e.preventDefault();
+                navigator.clipboard.writeText(phoneNumber).then(() => {
+                    copyNotification.style.display = 'block';
+                    setTimeout(() => {
+                        copyNotification.style.display = 'none';
+                    }, 2000);
+                });
+            }
+            // На мобильных устройствах ссылка tel: сработает автоматически
+        });
+        
+        // Установка правильного href для телефона
+        phoneLink.href = `tel:${cleanPhoneNumber}`;
+        
+        // Подавление ошибок от iframe
+        const iframe = document.querySelector('iframe');
+        iframe.onerror = function() {
+            return false;
+        };
+        
+        // Обработка ошибок
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('Content Security Policy')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+    <script>
+// Добавьте этот код в конец существующего скрипта
+
+// Функция для отслеживания посещений
+async function trackVisits() {
+    // Проверяем, включено ли отслеживание
+    if (window.enableTracking === false) {
+        console.log('Отслеживание посещений отключено');
+        return;
+    }
+    
+    try {
+        const database = window.firebaseDatabase;
+        const ref = window.firebaseRef;
+        const set = window.firebaseSet;
+        const update = window.firebaseUpdate;
+        const increment = window.firebaseIncrement;
+        const onValue = window.firebaseOnValue;
+        const get = window.firebaseGet;
+        
+        if (!database) {
+            setTimeout(trackVisits, 1000);
+            return;
+        }
+        
+        // Получаем информацию о пользователе
+        const userInfo = await getUserInfo();
+        
+        const today = new Date().toISOString().split('T')[0];
+        const timestamp = Date.now().toString(); // Используем timestamp как ключ
+        
+        // Ссылки на данные
+        const dailyRef = ref(database, 'visits/daily/' + today);
+        const dailyUserRef = ref(database, 'visits/daily/' + today + '/users/' + timestamp);
+        const onlineRef = ref(database, 'visits/online/' + timestamp);
+        const totalRef = ref(database, 'visits/total');
+        
+        // Формируем строку для записи
+        const userDataString = `${userInfo.ip} ➔ ${userInfo.timestamp} ➔ ${userInfo.os} ➔ ${userInfo.deviceType} ➔ ${userInfo.browser} ➔ ${userInfo.resolution} ➔ ${userInfo.version}`;
+        const updateString = `${userInfo.timestamp} ➔ ${userInfo.ip}`;
+        
+        // 1. Увеличиваем счетчик за день и обновляем lastUpdate с IP
+        try {
+            const dailySnapshot = await get(dailyRef);
+            if (dailySnapshot.exists()) {
+                await update(dailyRef, {
+                    count: increment(1),
+                    lastUpdate: updateString
+                });
+            } else {
+                await set(dailyRef, {
+                    count: 1,
+                    date: today,
+                    lastUpdate: updateString
+                });
+            }
+        } catch (error) {
+            //console.log('Ошибка при обновлении дневной статистики:', error);
+        }
+        
+        // 2. Добавляем детальную информацию о пользователе как timestamp: data
+        await set(dailyUserRef, userDataString);
+        
+        // 3. Добавляем пользователя в онлайн
+        await set(onlineRef, {
+            timestamp: timestamp,
+            ip: userInfo.ip,
+            userAgent: userInfo.userAgent
+        });
+        
+        // Удаляем при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            set(onlineRef, null);
+        });
+        
+        // 4. Обновляем общее количество посещений с IP
+        try {
+            const totalSnapshot = await get(totalRef);
+            if (totalSnapshot.exists()) {
+                await update(totalRef, {
+                    count: increment(1),
+                    lastUpdate: updateString
+                });
+            } else {
+                await set(totalRef, {
+                    count: 1,
+                    lastUpdate: updateString
+                });
+            }
+        } catch (error) {
+            //console.log('Ошибка при обновлении общей статистики:', error);
+        }
+        
+        // 5. Отслеживаем статистику в реальном времени
+        updateStats();
+        
+        // 6. Очистка устаревших сессий (каждые 2 минуты)
+        setInterval(() => {
+            cleanupOldSessions();
+        }, 120000);
+    } catch (error) {
+        //console.error('Ошибка при инициализации статистики:', error);
+    }
+}
+
+// Функция для обновления статистики на странице
+function updateStats() {
+    const database = window.firebaseDatabase;
+    const ref = window.firebaseRef;
+    const onValue = window.firebaseOnValue;
+    const get = window.firebaseGet;
+    
+    if (!database) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const dailyRef = ref(database, 'visits/daily/' + today);
+    const onlineRef = ref(database, 'visits/online');
+    const totalRef = ref(database, 'visits/total');
+    const allDaysRef = ref(database, 'visits/daily');
+    
+    // Онлайн пользователи
+    onValue(onlineRef, (snapshot) => {
+        const data = snapshot.val();
+        const onlineCount = data ? Object.keys(data).length : 0;
+        const onlineElement = document.getElementById('onlineUsersStat');
+        if (onlineElement) onlineElement.textContent = onlineCount;
+    });
+    
+    // Посещения за сегодня
+    onValue(dailyRef, (snapshot) => {
+        const data = snapshot.val();
+        const dailyCount = data ? data.count : 0;
+        const dailyElement = document.getElementById('dailyVisitsStat');
+        if (dailyElement) dailyElement.textContent = dailyCount;
+    });
+    
+    // Всего посещений
+    onValue(totalRef, (snapshot) => {
+        const data = snapshot.val();
+        const totalCount = data ? data.count : 0;
+        const totalElement = document.getElementById('totalVisitsStat');
+        if (totalElement) totalElement.textContent = totalCount;
+    });
+    
+    // Максимум за день (из последних 30 дней)
+    onValue(allDaysRef, async (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            let maxVisits = 0;
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            for (const [date, dayData] of Object.entries(data)) {
+                if (dayData && dayData.count) {
+                    const visitDate = new Date(date);
+                    if (visitDate >= thirtyDaysAgo && dayData.count > maxVisits) {
+                        maxVisits = dayData.count;
+                    }
+                }
+            }
+            
+            const maxElement = document.getElementById('maxDailyStat');
+            if (maxElement) maxElement.textContent = maxVisits;
+        }
+    });
+}
+
+// Добавьте в начале скрипта, после других констант
+async function getUserInfo() {
+    try {
+        // Получаем IP
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        const ip = ipData.ip || 'unknown';
+        
+        // Определяем устройство и ОС
+        const userAgent = navigator.userAgent;
+        let os = 'Unknown OS';
+        let deviceType = 'Desktop';
+        let browser = 'Unknown Browser';
+        
+        // Определяем ОС
+        if (userAgent.includes('Windows')) os = 'Windows';
+        else if (userAgent.includes('Mac')) os = 'macOS';
+        else if (userAgent.includes('Linux')) os = 'Linux';
+        else if (userAgent.includes('Android')) os = 'Android';
+        else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+        
+        // Определяем тип устройства
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+            deviceType = 'Mobile';
+        } else if (/Tablet|iPad/i.test(userAgent)) {
+            deviceType = 'Tablet';
+        }
+        
+        // Определяем браузер
+        if (userAgent.includes('Chrome')) browser = 'Chrome';
+        else if (userAgent.includes('Firefox')) browser = 'Firefox';
+        else if (userAgent.includes('Safari')) browser = 'Safari';
+        else if (userAgent.includes('Edge')) browser = 'Edge';
+        else if (userAgent.includes('Opera')) browser = 'Opera';
+        
+        // Получаем разрешение экрана
+        const resolution = `${window.screen.width}x${window.screen.height}`;
+        
+        // Версия сайта
+        const version = 'v1.5.3';
+        
+        return {
+            ip,
+            os,
+            deviceType,
+            browser,
+            resolution,
+            version,
+            userAgent: userAgent.substring(0, 100),
+            timestamp: new Date().toISOString()
+        };
+    } catch (error) {
+        //console.log('Ошибка при получении информации:', error);
+        return {
+            ip: 'unknown',
+            os: 'Unknown',
+            deviceType: 'Unknown',
+            browser: 'Unknown',
+            resolution: 'unknown',
+            version: 'v1.5.2.3',
+            userAgent: navigator.userAgent.substring(0, 100),
+            timestamp: new Date().toISOString()
+        };
+    }
+}
+
+// Функция очистки старых сессий
+async function cleanupOldSessions() {
+    try {
+        const database = window.firebaseDatabase;
+        const ref = window.firebaseRef;
+        const set = window.firebaseSet;
+        const get = window.firebaseGet;
+        
+        if (!database) return;
+        
+        const onlineRef = ref(database, 'visits/online');
+        const snapshot = await get(onlineRef);
+        
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const now = Date.now();
+            const tenMinutesAgo = now - 10 * 60 * 1000;
+            
+            for (const [timestampKey, sessionData] of Object.entries(data)) {
+                // Проверяем по timestamp в ключе
+                const sessionTimestamp = parseInt(timestampKey);
+                if (sessionTimestamp < tenMinutesAgo) {
+                    await set(ref(database, 'visits/online/' + timestampKey), null);
+                }
+            }
+        }
+    } catch (error) {
+        //console.log('Ошибка при очистке сессий:', error);
+    }
+}
+setTimeout(() => {
+    trackVisits();
+}, 500);
+    </script>
+</body>
+</html>
