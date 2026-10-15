@@ -1,5 +1,0 @@
-RewriteEngine On
-
-# Перенаправляем ВСЕ синонимы на основной домен bullace.ru
-RewriteCond %{HTTP_HOST} !^bullace\.ru$ [NC]
-RewriteRule ^(.*)$ http://bullace.ru/$1 [L,R=301]
