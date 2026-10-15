@@ -1,1 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Визир</title>
+    
+    <link rel="icon" type="image/png" href="icon.png">
+    
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ea62cdbc-389a-47be-9537-bbf039b41825&lang=ru_RU" type="text/javascript"></script>
 
+    <style>
+        /* CSS переменные для тем */
+        :root {
+            --bg-color: #ffffff;
+            --sidebar-bg: #f5f5f5;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --input-bg: #ffffff;
+            --input-border: #cccccc;
+            --item-bg: #eeeeee;
+            --accent-color: #008888;
+            --label-color: #666666;
+            --big-data-bg: #e0e0e0;
+        }
+
+        body.dark-theme {
+            --bg-color: #000000;
+            --sidebar-bg: #0f0f0f;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --input-bg: #222222;
+            --input-border: #444444;
+            --item-bg: #1a1a1a;
+            --accent-color: #00e6e6;
+            --label-color: #aaaaaa;
+            --big-data-bg: #111111;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Flex-контейнер для левой панели */
+        #sidebar {
+            position: relative;
+            width: 340px;
+            flex-shrink: 0;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: margin-left 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        #sidebar.hidden {
+            margin-left: -340px;
+        }
+
+        /* Адаптация под узкие экраны телефонов */
+        @media (max-width: 400px) {
+            #sidebar { width: calc(100vw - 30px); }
+            #sidebar.hidden { margin-left: calc(-100vw + 30px); }
+        }
+
+        /* Внутренний контейнер панели со скроллом */
+        .sidebar-content {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Кнопка скрытия/раскрытия */
+        #toggle-sidebar-btn {
+            position: absolute;
+            top: 50%;
+            right: -30px; /* Выступает за край панели */
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-left: none; /* Сливается с панелью */
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 0 5px rgba(0,0,0,0.15);
+            font-size: 1.2rem;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            outline: none;
+        }
+
+        #toggle-sidebar-btn:hover {
+            background-color: var(--item-bg);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #ff3333;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .header span { color: var(--text-color); margin-left: 5px; }
+        
+        .section-title {
+            font-size: 0.85rem;
+            color: var(--label-color);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            flex: 1;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .search-box button {
+            background-color: var(--border-color);
+            border: 1px solid var(--input-border);
+            border-left: none;
+            color: var(--text-color);
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            transition: 0.2s;
+        }
+        .search-box button:hover { opacity: 0.8; }
+
+        select {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .data-item { display: flex; flex-direction: column; }
+        
+        .data-label { 
+            font-size: 0.75rem; 
+            color: var(--label-color); 
+            border-bottom: 1px dotted var(--label-color);
+            cursor: help;
+            width: fit-content;
+        }
+        
+        .data-value {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--item-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        .switch-label { font-size: 0.95rem; color: var(--text-color); }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #4CAF50; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .trees-info {
+            font-size: 0.85rem;
+            color: var(--label-color);
+            display: none;
+            background: var(--input-bg);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        #obstacle-big-data {
+            display: none; 
+            font-size: 1.6rem; 
+            color: var(--accent-color); 
+            font-weight: bold; 
+            margin-top: 15px; 
+            padding: 15px 10px; 
+            background: var(--big-data-bg); 
+            border-radius: 6px; 
+            text-align: center; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .big-label {
+            font-size: 0.9rem;
+            color: var(--label-color);
+            font-weight: normal;
+        }
+
+        /* Flex-контейнер для карты (занимает всё оставшееся место) */
+        .map-container {
+            flex-grow: 1;
+            position: relative;
+            height: 100%;
+        }
+        
+        #map {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+
+        /* Инверсия цветов для тёмной темы на Схеме */
+        .dark-map-filter ymaps[class$="-map"] {
+            filter: invert(100%) hue-rotate(180deg) brightness(0.8) contrast(1.1);
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div id="sidebar">
+        <button id="toggle-sidebar-btn" title="Скрыть/Показать панель">⬅️</button>
+        
+        <div class="sidebar-content">
+            <div class="header">
+                🛰️ <span>Визир</span>
+            </div>
+
+            <div class="switch-container" style="margin-bottom: 20px;">
+                <span class="switch-label">🌙 Тёмная тема</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-theme" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="city-input" value="Ухта" placeholder="Введите город или адрес...">
+                <button id="search-btn">🔍</button>
+            </div>
+
+            <div class="section-title">Выбор спутника (Satellite Data)</div>
+            <select id="satellite-select">
+                <option value="-0.8">0.8W THOR 5/6/7</option>
+                <option value="4.8">4.8E ASTRA 4A</option>
+                <option value="9.0">9.0E EUTELSAT 9B</option>
+                <option value="13.0">13.0E HOT BIRD 13B/C/E</option>
+                <option value="36.0" selected>36.0E EXPRESS-AMU1 / EUTELSAT 36D</option>
+                <option value="56.0">56.0E EXPRESS-AT1</option>
+                <option value="75.0">75.0E ABS-2A</option>
+                <option value="85.2">85.2E INTELSAT 15</option>
+                <option value="90.0">90.0E YAMAL 401</option>
+            </select>
+
+            <div class="section-title">Данные для настройки тарелки</div>
+            <div class="data-grid">
+                <div class="data-item">
+                    <span class="data-label" title="Истинный азимут — точный угол между направлением на географический северный полюс и направлением на спутник.">Азимут (истинный)</span>
+                    <span class="data-value" id="val-az-true">--</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label" title="Магнитный азимут — угол по компасу. Учитывает магнитное склонение Земли. Именно его нужно использовать при настройке антенны с помощью обычного компаса.">Азимут (магнитный)</span>
+                    <span class="data-value" id="val-az-mag">--</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label" title="Угол места (Элевация) — угол возвышения спутника над линией горизонта. Показывает, насколько высоко вверх (в градусах) нужно направить тарелку.">Угол места (Элевация)</span>
+                    <span class="data-value" id="val-el">--</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label" title="Угол поворота конвертера (головки) вокруг своей оси. Необходим для компенсации кривизны Земли, чтобы сигнал фокусировался правильно.">Поворот конвертера</span>
+                    <span class="data-value" id="val-skew">--</span>
+                </div>
+            </div>
+
+            <div class="section-title">Препятствия (Деревья и здания)</div>
+            <div class="switch-container">
+                <span class="switch-label">🌲 Учитывать препятствия</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-trees">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div id="obstacle-big-data">
+                <span class="big-label">Дистанция (d):</span> <span id="obs-big-d">--</span>m<br>
+                <span class="big-label">Высота луча (h):</span> <span id="obs-big-h">--</span>m
+            </div>
+
+            <div class="trees-info" id="trees-info" style="margin-top: 10px;">
+                Вручную перетащите фиолетовую точку строго по синей линии на край здания, чтобы узнать высоту луча (допускается ли препятствие).
+            </div>
+        </div>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <script>
+		console.log('%c'+'📡 Версия: 1.10 📡', 'color: #00a2ff');
+        const state = {
+            lat: null,
+            lon: null,
+            azTrue: 0,
+            elevation: 0,
+            obstacleEnabled: false,
+            obstacleDist: 49.9 
+        };
+
+        const MAG_DECLINATION = 21.1; 
+        let myMap, yaUserMarker, yaObsMarker, yaSightLine;
+
+        ymaps.ready(function() {
+            myMap = new ymaps.Map("map", {
+                center: [63.5642, 53.6573],
+                zoom: 17,
+                type: 'yandex#satellite',
+                controls: ['zoomControl', 'typeSelector', 'fullscreenControl', 'geolocationControl', 'rulerControl']
+            });
+            
+            myMap.events.add('click', function (e) {
+                let coords = e.get('coords');
+                updateLocation(coords[0], coords[1]);
+            });
+
+            myMap.events.add('typechange', updateMapFilter);
+            updateMapFilter(); 
+        });
+
+        // Логика переключения панели с анимацией и перерисовкой размера карты
+        const toggleBtn = document.getElementById('toggle-sidebar-btn');
+        const sidebar = document.getElementById('sidebar');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            toggleBtn.innerText = sidebar.classList.contains('hidden') ? '➡️' : '⬅️';
+            
+            // Чтобы Яндекс.Карта не растягивалась криво, сообщаем ей об изменении размера контейнера
+            let start = Date.now();
+            let timer = setInterval(() => {
+                if (myMap) myMap.container.fitToViewport();
+                if (Date.now() - start > 350) clearInterval(timer);
+            }, 15);
+        });
+
+        document.getElementById('toggle-theme').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+            updateMapFilter();
+        });
+
+        function updateMapFilter() {
+            if (!myMap) return;
+            const isDark = document.body.classList.contains('dark-theme');
+            const isSchema = myMap.getType() === 'yandex#map';
+            const mapEl = document.getElementById('map');
+            
+            if (isDark && isSchema) {
+                mapEl.classList.add('dark-map-filter');
+            } else {
+                mapEl.classList.remove('dark-map-filter');
+            }
+        }
+
+        document.getElementById('search-btn').addEventListener('click', searchCity);
+        document.getElementById('city-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchCity();
+        });
+
+        function searchCity() {
+            let query = document.getElementById('city-input').value;
+            if (!query) return;
+
+            ymaps.geocode(query).then(function (res) {
+                let firstGeoObject = res.geoObjects.get(0);
+                if (firstGeoObject) {
+                    let coords = firstGeoObject.geometry.getCoordinates();
+                    myMap.setCenter(coords, 16);
+                    updateLocation(coords[0], coords[1]);
+                } else {
+                    console.error('Локация не найдена. Попробуйте уточнить запрос.');
+                }
+            }).catch(function(err) {
+                console.error('Ошибка геокодирования:', err);
+            });
+        }
+
+        document.getElementById('satellite-select').addEventListener('change', () => {
+            if(state.lat !== null) updateCalculations();
+        });
+
+        document.getElementById('toggle-trees').addEventListener('change', function(e) {
+            state.obstacleEnabled = e.target.checked;
+            document.getElementById('trees-info').style.display = state.obstacleEnabled ? 'block' : 'none';
+            document.getElementById('obstacle-big-data').style.display = state.obstacleEnabled ? 'block' : 'none';
+            
+            if (state.lat !== null) {
+                state.obstacleDist = 49.9; 
+                updateCalculations();
+            }
+        });
+
+        function updateLocation(lat, lon) {
+            state.lat = lat;
+            state.lon = lon;
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            if (state.lat === null) return;
+
+            let satLon = parseFloat(document.getElementById('satellite-select').value);
+
+            let latRad = state.lat * Math.PI / 180;
+            let lonRad = state.lon * Math.PI / 180;
+            let satLonRad = satLon * Math.PI / 180;
+            let lonDiff = lonRad - satLonRad; 
+
+            state.azTrue = 180 + (Math.atan(Math.tan(lonDiff) / Math.sin(latRad)) * 180 / Math.PI);
+            if (state.lat < 0) state.azTrue -= 180; 
+            if (state.azTrue < 0) state.azTrue += 360;
+            if (state.azTrue > 360) state.azTrue -= 360;
+
+            let v1 = Math.cos(latRad) * Math.cos(lonRad - satLonRad);
+            let elRad = Math.atan((v1 - 0.1512) / Math.sqrt(1 - v1 * v1)); 
+            state.elevation = elRad * 180 / Math.PI;
+
+            let skew = Math.atan(Math.sin(lonDiff) / Math.tan(latRad)) * 180 / Math.PI;
+
+            document.getElementById('val-az-true').innerText = state.azTrue.toFixed(1) + '°';
+            document.getElementById('val-az-mag').innerText = (state.azTrue - MAG_DECLINATION).toFixed(1) + '°';
+            document.getElementById('val-el').innerText = state.elevation.toFixed(1) + '°';
+            document.getElementById('val-skew').innerText = skew.toFixed(1) + '°';
+
+            renderMaps();
+        }
+
+        function getObstacleText(dist) {
+            let elRad = state.elevation * Math.PI / 180;
+            let h = dist * Math.tan(elRad);
+            if (h < 0) h = 0;
+            
+            document.getElementById('obs-big-d').innerText = dist.toFixed(1);
+            document.getElementById('obs-big-h').innerText = h.toFixed(1);
+
+            return `d=${dist.toFixed(1)}m | h=${h.toFixed(1)}m`;
+        }
+
+        function renderMaps() {
+            if (!myMap) return;
+
+            // ФИКС БАГА С ЛИНИЕЙ: Строим линию по точкам с помощью нашей же сферической формулы.
+            // Теперь геометрия линии и формулы маркера идеально совпадают на любых дистанциях.
+            const lineCoords = [];
+            for (let d = 0; d <= 2000000; d += 10000) {
+                lineCoords.push(getDestinationPoint(state.lat, state.lon, state.azTrue, d));
+            }
+
+            let obsCoords = null;
+            if (state.obstacleEnabled) {
+                obsCoords = getDestinationPoint(state.lat, state.lon, state.azTrue, state.obstacleDist);
+            }
+
+            if (!yaUserMarker) {
+                yaUserMarker = new ymaps.Placemark([state.lat, state.lon], {}, { preset: 'islands#redDotIcon', draggable: true });
+                yaUserMarker.events.add('dragend', (e) => {
+                    let c = yaUserMarker.geometry.getCoordinates();
+                    updateLocation(c[0], c[1]);
+                });
+                myMap.geoObjects.add(yaUserMarker);
+            } else {
+                yaUserMarker.geometry.setCoordinates([state.lat, state.lon]);
+            }
+
+            if (yaSightLine) myMap.geoObjects.remove(yaSightLine);
+            yaSightLine = new ymaps.Polyline(lineCoords, {}, { strokeColor: '#00e6e6', strokeWidth: 3, geodesic: false });
+            myMap.geoObjects.add(yaSightLine);
+
+            if (state.obstacleEnabled && obsCoords) {
+                let text = getObstacleText(state.obstacleDist);
+                if (!yaObsMarker) {
+                    yaObsMarker = new ymaps.Placemark(obsCoords, { iconContent: text }, { preset: 'islands#violetStretchyIcon', draggable: true });
+                    yaObsMarker.events.add('drag', () => {
+                        let curr = yaObsMarker.geometry.getCoordinates();
+                        let dist = ymaps.coordSystem.geo.getDistance([state.lat, state.lon], curr);
+                        state.obstacleDist = dist;
+                        // Примагничиваем маркер обратно на нашу идеальную линию
+                        let snapped = getDestinationPoint(state.lat, state.lon, state.azTrue, dist);
+                        yaObsMarker.geometry.setCoordinates(snapped);
+                        yaObsMarker.properties.set('iconContent', getObstacleText(dist));
+                    });
+                    yaObsMarker.events.add('dragend', () => renderMaps());
+                    myMap.geoObjects.add(yaObsMarker);
+                } else {
+                    yaObsMarker.geometry.setCoordinates(obsCoords);
+                    yaObsMarker.properties.set('iconContent', text);
+                    if(yaObsMarker.getParent() === null) myMap.geoObjects.add(yaObsMarker);
+                }
+            } else if (yaObsMarker) {
+                myMap.geoObjects.remove(yaObsMarker);
+            }
+        }
+
+        // Формула расчёта точки на сфере
+        function getDestinationPoint(lat, lon, bearing, distance) {
+            const R = 6371e3; 
+            const fi1 = lat * Math.PI / 180;
+            const lambda1 = lon * Math.PI / 180;
+            const theta = bearing * Math.PI / 180;
+            const delta = distance / R;
+
+            const fi2 = Math.asin(Math.sin(fi1) * Math.cos(delta) + Math.cos(fi1) * Math.sin(delta) * Math.cos(theta));
+            const lambda2 = lambda1 + Math.atan2(Math.sin(theta) * Math.sin(delta) * Math.cos(fi1), Math.cos(delta) - Math.sin(fi1) * Math.sin(fi2));
+
+            return [fi2 * 180 / Math.PI, lambda2 * 180 / Math.PI];
+        }
+    </script>
+</body>
+</html>
