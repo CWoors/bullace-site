@@ -2,6 +2,47 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <script>
+        /* =====================================================================
+           НАСТРОЙКИ САЙТА — всё основное собрано в одном месте
+           ===================================================================== */
+
+        // Версия сайта: выводится в консоль и записывается в БД вместе с посещением
+        const SITE_VERSION = 'v1.5.4-4 (Halloween)';
+
+        // Запись посещений в базу данных (Firebase)
+        // true – посещения записываются, false – запись отключена
+        window.enableTracking = true; // бд / db
+
+        // Даты праздничного оформления (месяцы считаем как обычно: 1 = январь ... 12 = декабрь).
+        // from – первый день события, to – последний день (включительно).
+        // Если from позже to, период переходит через Новый год (например, декабрь – февраль).
+        const SITE_EVENTS = {
+            // Зима (с 1 декабря по конец февраля): гирлянда, зимние эмодзи, статистика за месяц
+            winter:     { from: { month: 12, day: 1  }, to: { month: 2,  day: 29 } },
+
+            // Новый год (1 и 2 января): выходные в графике, праздничный фон и поздравление
+            newYear:    { from: { month: 1,  day: 1  }, to: { month: 1,  day: 2  } },
+
+            // День Победы (9 мая): выходной в графике, праздничный фон и поздравление
+            victoryDay: { from: { month: 5,  day: 9  }, to: { month: 5,  day: 9  } },
+
+            // Хэллоуин (с 26 октября по 2 ноября): украшение всего сайта, тыквы, летучие мыши,
+            // паучок, тёмная карта, хэллоуинские эмодзи и оформление диалоговых окон
+            halloween:  { from: { month: 10, day: 26 }, to: { month: 11, day: 2  } }
+        };
+
+        // Проверка: попадает ли дата в период события
+        function isEventActive(name, date = new Date()) {
+            const ev = SITE_EVENTS[name];
+            if (!ev) return false;
+            const key  = (date.getMonth() + 1) * 100 + date.getDate();
+            const from = ev.from.month * 100 + ev.from.day;
+            const to   = ev.to.month * 100 + ev.to.day;
+            return from <= to ? (key >= from && key <= to)   // период внутри одного года
+                              : (key >= from || key <= to);  // период через Новый год
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>БУЛАЙЗ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -857,6 +898,471 @@
     /* Если картинка смотрит вправо, а нужно влево, добавь это: */
     transform: scaleX(-1); 
 }
+
+/* ============================================================
+   🎃 ХЭЛЛОУИН (26 октября – 2 ноября)
+   Все правила действуют ТОЛЬКО при классе body.halloween,
+   который ставится скриптом в эти даты. В остальное время
+   сайт выглядит как раньше.
+   ============================================================ */
+body.halloween {
+    --hw-orange: #ff8a1f;
+    --hw-orange-soft: #ffb454;
+    --hw-purple: #b66bff;
+    background-image:
+        radial-gradient(ellipse at 50% 100%, rgba(255, 110, 0, 0.25), transparent 60%),
+        linear-gradient(rgba(20, 4, 34, 0.82), rgba(8, 0, 16, 0.9)),
+        url('background.jpeg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+/* --- Цвета: голубой -> оранжевый / фиолетовый --- */
+body.halloween .header {
+    border-color: var(--hw-orange);
+    box-shadow: 0 0 18px rgba(255, 138, 31, 0.55), 0 0 40px rgba(182, 107, 255, 0.2);
+}
+body.halloween .settings-btn { color: var(--hw-orange); }
+body.halloween .header h1 {
+    color: var(--hw-orange);
+    text-shadow: 0 0 12px rgba(255, 138, 31, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+body.halloween .header h2 { color: #f3e5ff; }
+body.halloween .info-block {
+    border-color: rgba(255, 138, 31, 0.45);
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(182, 107, 255, 0.12);
+    position: relative;
+}
+body.halloween .info-block h3 {
+    color: var(--hw-orange);
+    border-bottom-color: var(--hw-orange);
+}
+body.halloween .info-block h3::after { content: '🎃'; font-size: 1.4rem; }
+body.halloween .info-block:nth-of-type(3) h3::after { content: '🦇'; }
+body.halloween .info-block:nth-of-type(4) h3::after { content: '🕸️'; }
+
+body.halloween .schedule-item {
+    background: rgba(255, 138, 31, 0.12);
+    border-left-color: var(--hw-orange);
+}
+body.halloween .schedule-item:hover { background: rgba(255, 138, 31, 0.22); }
+body.halloween .schedule-item:not(.new-year-schedule-item):not(.victory-day-schedule-item):hover {
+    background: rgba(255, 138, 31, 0.22);
+}
+body.halloween .schedule-day { color: #f3e5ff; }
+body.halloween .schedule-time { color: var(--hw-orange-soft); }
+body.halloween .current-day {
+    background: rgba(182, 107, 255, 0.2);
+    border-left-color: var(--hw-purple);
+}
+body.halloween .current-day .schedule-day { color: #d9a8ff; }
+body.halloween .day-off { color: #ff6b6b; }
+body.halloween .contact-link { color: var(--hw-orange-soft); }
+body.halloween .contact-link:hover { color: #ffd08a; }
+body.halloween .icon {
+    background: linear-gradient(135deg, #ff8a1f, #b4400a);
+    box-shadow: 0 0 10px rgba(255, 138, 31, 0.5);
+}
+body.halloween .footer {
+    position: relative;
+    border: 1px solid rgba(255, 138, 31, 0.45);
+}
+body.halloween .hw-footer-greet {
+    color: var(--hw-orange);
+    font-weight: 600;
+    margin-top: 6px;
+}
+body.halloween .map-container { box-shadow: 0 0 14px rgba(255, 138, 31, 0.35); }
+/* Тёмная карта Яндекса (у виджета нет параметра темы, поэтому тёмный вид делаем фильтром) */
+body.halloween .map-container iframe {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.85);
+}
+
+/* --- Картинки на странице --- */
+body.halloween .header::before,
+body.halloween .header::after,
+body.halloween .info-block::before,
+body.halloween .info-block::after,
+body.halloween .footer::before,
+body.halloween .footer::after,
+body.halloween .modal-content::before,
+body.halloween .modal-content::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    z-index: 3;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+/* Шапка: летучая мышь слева, надпись Happy Halloween справа */
+body.halloween .header::before {
+    background-image: url('hw3.png');
+    left: 70px; bottom: 14px; width: 88px; height: 88px;
+}
+body.halloween .header::after {
+    background-image: url('hw5.png');
+    right: 28px; bottom: -4px; width: 168px; height: 165px;
+}
+/* Блок "График": летучая мышь на углу */
+body.halloween .info-block:nth-of-type(2)::before {
+    background-image: url('hw3.png');
+    top: -32px; right: -20px; width: 76px; height: 76px;
+    transform: rotate(10deg);
+}
+/* Блок "Контакты": тыква в шляпе */
+body.halloween .info-block:nth-of-type(3)::after {
+    background-image: url('hw2.png');
+    right: 40px; top: 55%; width: 190px; height: 131px;
+    transform: translateY(-50%);
+}
+/* Блок "Как нас найти": мумия слева внизу, мышь на углу */
+body.halloween .info-block:nth-of-type(4)::before {
+    background-image: url('hw4.png');
+    left: 30px; bottom: 14px; width: 104px; height: 114px;
+}
+body.halloween .info-block:nth-of-type(4)::after {
+    background-image: url('hw3.png');
+    top: -34px; left: -14px; width: 70px; height: 70px;
+    transform: rotate(-12deg);
+}
+/* Подвал: мумия и тыква по бокам */
+body.halloween .footer::before {
+    background-image: url('hw2.png');
+    left: -115px; bottom: 0; width: 96px; height: 105px;
+}
+body.halloween .footer::after {
+    background-image: url('hw4.png');
+    right: -95px; bottom: 0; width: 115px; height: 79px;
+}
+
+/* Паук на ниточке (за него можно дёрнуть) */
+.hw-spider {
+    position: absolute;
+    top: 0;
+    left: 12%;
+    width: 30px;
+    margin-left: -15px;
+    transform-origin: top center;
+    animation: hwSwing 3.2s ease-in-out infinite alternate;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 1001;
+    outline: none;
+}
+.hw-spider.pulled { animation-play-state: paused; }
+.hw-spider-line {
+    display: block;
+    width: 2px;
+    height: 34px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.6);
+    transition: height 0.6s cubic-bezier(0.3, 1.9, 0.5, 1); /* упругий возврат */
+}
+.hw-spider.pulled .hw-spider-line {
+    height: 74px;
+    transition: height 0.15s ease-out;
+}
+.hw-spider-body {
+    display: block;
+    text-align: center;
+    font-size: 22px;
+    line-height: 1;
+    margin-top: -2px;
+}
+@keyframes hwSwing {
+    from { transform: rotate(-9deg); }
+    to   { transform: rotate(9deg); }
+}
+
+/* Паучий дождь */
+.hw-rain {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1000;
+}
+.hw-rain-spider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 1;
+    will-change: transform;
+}
+.hw-rain-thread {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 0;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+/* Летающие летучие мыши */
+.hw-bats {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 998;
+}
+.hw-bat {
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+}
+.hw-bat img {
+    display: block;
+    width: 100%;
+    animation: hwFlap 0.35s ease-in-out infinite alternate;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+}
+@keyframes hwFlap {
+    from { transform: scaleX(1) scaleY(1); }
+    to   { transform: scaleX(0.72) scaleY(1.04); }
+}
+
+/* --- Диалоговое окно --- */
+body.halloween .modal-overlay {
+    background: radial-gradient(ellipse at center, rgba(40, 8, 60, 0.75), rgba(0, 0, 0, 0.85));
+}
+body.halloween .modal-content {
+    position: relative;
+    overflow: visible;
+    border-color: var(--hw-orange);
+    background: linear-gradient(160deg, rgba(30, 10, 44, 0.97), rgba(12, 6, 18, 0.97));
+    box-shadow: 0 0 30px rgba(255, 138, 31, 0.45), 0 0 70px rgba(182, 107, 255, 0.2);
+}
+body.halloween .modal-header {
+    background: rgba(255, 138, 31, 0.14);
+    border-bottom-color: var(--hw-orange);
+    border-radius: 13px 13px 0 0;
+}
+body.halloween .modal-header h3 { color: var(--hw-orange); }
+body.halloween .modal-header h3::before { content: '🎃 '; }
+body.halloween .modal-body {
+    max-height: calc(80vh - 70px);
+    overflow-y: auto;
+    border-radius: 0 0 13px 13px;
+}
+body.halloween .tabs {
+    border-right-color: rgba(255, 138, 31, 0.35);
+    background: rgba(0, 0, 0, 0.35);
+}
+body.halloween .tab.active {
+    color: var(--hw-orange);
+    border-left-color: var(--hw-orange);
+    background: rgba(255, 138, 31, 0.14);
+}
+body.halloween .tab { padding: 15px 10px; }
+body.halloween .toggle-switch { flex-shrink: 0; }
+body.halloween .tab[data-tab="settings"]::before { content: '👻 '; }
+body.halloween .tab[data-tab="stats"]::before    { content: '🦇 '; }
+body.halloween .tab[data-tab="about"]::before    { content: '🕯️ '; }
+body.halloween .settings-item h4 { color: #f3e5ff; }
+body.halloween input:checked + .toggle-slider { background-color: var(--hw-orange); }
+body.halloween .toggle-label { color: #f3e5ff; }
+body.halloween #settings-tab .toggle-label > span:last-child::after { content: ' 🎃'; }
+
+/* Статистика */
+body.halloween .stat-box {
+    background: rgba(255, 138, 31, 0.1);
+    border-color: rgba(255, 138, 31, 0.35);
+}
+body.halloween .stat-box:hover {
+    background: rgba(255, 138, 31, 0.18);
+    box-shadow: 0 5px 15px rgba(255, 138, 31, 0.25);
+}
+body.halloween .stat-value { color: var(--hw-orange); }
+body.halloween .stat-box::after {
+    position: absolute;
+    bottom: 8px; right: 10px;
+    font-size: 1.1rem;
+    opacity: 0.85;
+}
+body.halloween .stat-box:nth-child(1)::after { content: '👻'; }
+body.halloween .stat-box:nth-child(2)::after { content: '🎃'; }
+body.halloween .stat-box:nth-child(3)::after { content: '💀'; }
+body.halloween .stat-box:nth-child(4)::after { content: '🕷️'; }
+body.halloween .stats-info {
+    border-left-color: var(--hw-orange);
+    background: rgba(255, 138, 31, 0.06);
+}
+body.halloween .stats-info i { color: var(--hw-orange); }
+
+/* Картинки диалога: тыква сверху, мышь снизу */
+body.halloween .modal-content::before {
+    background-image: url('hw2.png');
+    right: -14px; top: -50px; width: 96px; height: 66px;
+}
+body.halloween .modal-content::after {
+    background-image: url('hw3.png');
+    left: -16px; bottom: -26px; width: 62px; height: 62px;
+    transform: rotate(-14deg);
+}
+
+/* Рамка с логотипом (вкладка «О сайте») и праздничная заметка */
+.hw-frame {
+    position: relative;
+    width: min(210px, 100%);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto 14px;
+}
+.hw-frame .hw-frame-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 2;
+    pointer-events: none;
+}
+.hw-frame .hw-frame-logo {
+    position: absolute;
+    left: 48%;
+    top: 48%;
+    width: 26%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+.hw-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #f3e5ff;
+    background: rgba(255, 138, 31, 0.1);
+    border-left: 3px solid #ff8a1f;
+    border-radius: 6px;
+}
+
+/* --- Компактные экраны: декор не должен налезать на текст --- */
+@media (max-width: 1000px) {
+    body.halloween .header::before { display: none; }
+    body.halloween .header::after {
+        right: -4px; top: -40px; bottom: auto; width: 84px; height: 82px;
+    }
+    /* Тыква в шляпе – внутри потока, по центру блока контактов */
+    body.halloween .info-block:nth-of-type(3)::after {
+        position: relative;
+        display: block;
+        right: auto; top: auto;
+        width: 150px; height: 103px;
+        margin: 12px auto 0;
+        transform: none;
+    }
+    /* Тыква в блоке карты – прячем, вместо неё мышь сверху справа */
+    body.halloween .info-block:nth-of-type(4)::before { display: none; }
+    body.halloween .footer::before {
+        left: auto; right: 16px; bottom: 100%; width: 58px; height: 63px;
+    }
+    body.halloween .footer::after { display: none; }
+    .hw-spider { left: 20%; }
+}
+@media (max-width: 480px) {
+    body.halloween .info-block:nth-of-type(2)::before { right: 12px; width: 62px; height: 62px; top: -28px; }
+    body.halloween .info-block:nth-of-type(4)::after { left: -10px; width: 58px; height: 58px; }
+    body.halloween .modal-content::before { right: -8px; width: 80px; height: 55px; top: -42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hw-spider, .hw-bat img { animation: none; }
+}
+/* ======================= КОНЕЦ ХЭЛЛОУИНА ======================= */
+
+/* ============================================================
+   🕷️ ИГРА «ПАУК-ПОЖИРАТЕЛЬ» (работает только при body.halloween)
+   Паук сидит на букве «Й» в «БУЛАЙЗ», ползает стрелками и
+   по пробелу кушает всё на сайте: текст – по буквам,
+   контейнеры и картинки – кусочками. Съеденные кнопки и
+   ссылки перестают работать.
+   ============================================================ */
+
+/* Слой паука: лежит поверх сайта, но ПОД диалоговым окном (у него z-index: 1000) */
+.sp-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 900;
+}
+.sp-spider {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+}
+.sp-svg {
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.6));
+    will-change: transform;
+}
+
+/* Съеденная буква: место в тексте остаётся, поэтому вёрстка не «схлопывается» */
+.sp-ch.sp-gone {
+    opacity: 0;
+    transition: opacity 0.12s;
+    pointer-events: none;
+}
+
+/* Съеденная кнопка/ссылка/карта: больше не реагирует на клики */
+.sp-dead {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+/* Крошки при поедании */
+.sp-crumb {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Счётчик и подсказка */
+#sp-hud {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    color: #f3e5ff;
+    background: rgba(20, 6, 32, 0.88);
+    border: 1px solid rgba(255, 138, 31, 0.6);
+    border-radius: 999px;
+    box-shadow: 0 0 14px rgba(255, 138, 31, 0.3);
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+/* На телефонах и планшетах счётчика и подсказки нет вообще */
+@media (pointer: coarse), (hover: none) {
+    #sp-hud { display: none !important; }
+}
+#sp-hud b { color: #ff8a1f; font-variant-numeric: tabular-nums; }
+#sp-hud .sp-hud-hint {
+    max-width: 320px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 0.6s ease, opacity 0.6s ease, margin 0.6s ease;
+}
+#sp-hud.compact .sp-hud-hint { max-width: 0; opacity: 0; margin-left: -12px; }
+/* ======================= КОНЕЦ ИГРЫ ПАУКА ======================= */
+
     </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -900,7 +1406,7 @@
     <div class="header-content">
         <div class="title-row">
             <img src="icon.png" alt="Логотип БУЛАЙЗ" class="header-logo">
-            <h1>БУЛАЙЗ*</h1>
+            <h1>БУЛАЙЗ</h1>
         </div>
         <h2>СПУТНИКОВОЕ ТЕЛЕВИДЕНИЕ</h2>
     </div>
@@ -1068,16 +1574,230 @@
         //console.clear();
 		
 		//console.log('%c'+'Это грустные, унылые, страшные красные ошибки, которые способен решить только Господь Бог, но я не он, поэтому да.', 'color: #ff8c00');
-		console.log('%c'+'Ошибки исчезли...👀 Какая прелесть!✨', 'color: #ff8c00');
-		console.log('%c'+'Версия сайта: v1.5.3-1 (Перенос)', 'color: #00a2ff');
+		console.log('%c'+'🎃 Если тут есть какие-то ошибки — вам просто кажется, они только в вашей голове. На самом деле тут пусто!', 'color: #ff8c00');
+		console.log('%c'+'👻 Версия сайта: ' + SITE_VERSION, 'color: #00a2ff');
 		
 		window.emojiInterval = null;
         
         // Определение текущего времени года
         const date = new Date();
         const month = date.getMonth();
-        const isWinter = (month === 0 || month === 1 || month === 11);
-		
+        const isWinter = isEventActive('winter');
+
+        // Хэллоуин (даты задаются в SITE_EVENTS в самом верху файла).
+        // Для проверки в другое время: добавьте к адресу ?halloween=1 (выключить: ?halloween=0)
+        const hwParam = new URLSearchParams(location.search).get('halloween');
+        const isHalloween = hwParam === '1'
+            ? true
+            : hwParam === '0'
+                ? false
+                : isEventActive('halloween');
+        if (isHalloween) document.body.classList.add('halloween');
+
+        // Оформление Хэллоуина: тексты, картинки в диалоге, подвал, летучие мыши
+        function applyHalloween() {
+            if (!isHalloween) return;
+
+            // Паучок на ниточке: за него можно дёрнуть
+            createSpider();
+
+            // Поздравление в подвале
+            const footer = document.querySelector('.footer');
+            if (footer) {
+                const greet = document.createElement('p');
+                greet.className = 'hw-footer-greet';
+                greet.textContent = '👻 Страшно уютного Хэллоуина! 👻';
+                footer.appendChild(greet);
+            }
+
+            // Диалог: вкладка «О сайте» – логотип в рамке
+            const aboutItem = document.querySelector('#about-tab .settings-item');
+            if (aboutItem) {
+                const frame = document.createElement('div');
+                frame.className = 'hw-frame';
+                frame.innerHTML = '<img class="hw-frame-logo" src="icon.png" alt="">' +
+                                  '<img class="hw-frame-img" src="hw1.png" alt="Happy Halloween">';
+                aboutItem.insertBefore(frame, aboutItem.firstChild);
+            }
+
+            // Диалог: вкладка «Настройки» – праздничная заметка
+            const settingsTab = document.getElementById('settings-tab');
+            if (settingsTab) {
+                const note = document.createElement('div');
+                note.className = 'hw-note';
+                note.textContent = '🦇 Хэллоуинское оформление и тыквы с призраками работают с 26 октября по 2 ноября. 👻';
+                settingsTab.appendChild(note);
+            }
+
+            startFlyingBats();
+        }
+
+        // Паучок на ниточке. Зажмите/нажмите на него и отпустите – сверху посыплются пауки
+        function createSpider() {
+            const spider = document.createElement('div');
+            spider.className = 'hw-spider';
+            spider.tabIndex = 0;
+            spider.setAttribute('role', 'button');
+            spider.setAttribute('aria-label', 'Дёрнуть за паучка');
+            spider.title = 'Дёрни меня!';
+            spider.innerHTML = '<span class="hw-spider-line"></span><span class="hw-spider-body">🕷️</span>';
+            document.body.appendChild(spider);
+
+            let pulled = false;
+            const pull = () => {
+                if (pulled) return;
+                pulled = true;
+                spider.classList.add('pulled');
+            };
+            const release = () => {
+                if (!pulled) return;
+                pulled = false;
+                spider.classList.remove('pulled');
+                spiderRain();
+            };
+
+            spider.addEventListener('pointerdown', (e) => { e.preventDefault(); pull(); });
+            window.addEventListener('pointerup', release);
+            window.addEventListener('pointercancel', release);
+            spider.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pull(); }
+            });
+            spider.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') release();
+            });
+        }
+
+        // Много пауков падает сверху. Половина проваливается вниз за экран,
+        // вторая половина зацепляется паутинкой за фон, а потом уползает в случайную сторону.
+        function spiderRain() {
+            let layer = document.querySelector('.hw-rain');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.className = 'hw-rain';
+                document.body.appendChild(layer);
+            }
+            const total = 70;
+            for (let i = 0; i < total; i++) {
+                const sticks = (i % 2 === 0);
+                setTimeout(() => dropSpider(layer, sticks), Math.random() * 900);
+            }
+        }
+
+        function dropSpider(layer, sticks) {
+            const W = window.innerWidth;
+            const H = window.innerHeight;
+            const size = 18 + Math.random() * 16;
+            const x = Math.random() * (W - size);
+
+            const el = document.createElement('span');
+            el.className = 'hw-rain-spider';
+            el.textContent = '🕷️';
+            el.style.fontSize = size + 'px';
+            el.style.left = x + 'px';
+            layer.appendChild(el);
+
+            const startY = -size - 10;
+
+            if (!sticks) {
+                // Падает насквозь и исчезает внизу
+                const spin = (Math.random() - 0.5) * 360;
+                const fall = el.animate([
+                    { transform: `translateY(${startY}px) rotate(0deg)` },
+                    { transform: `translateY(${H + 60}px) rotate(${spin}deg)` }
+                ], { duration: 900 + Math.random() * 900, easing: 'cubic-bezier(0.5, 0, 1, 0.7)' });
+                fall.onfinish = () => el.remove();
+                return;
+            }
+
+            // Зацепился за фон на случайной высоте
+            const landY = H * (0.1 + Math.random() * 0.8);
+            const thread = document.createElement('span');
+            thread.className = 'hw-rain-thread';
+            thread.style.left = (x + size / 2) + 'px';
+            layer.appendChild(thread);
+
+            const fallOpts = { duration: 800 + Math.random() * 800, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1.15)', fill: 'forwards' };
+            thread.animate([{ height: '0px' }, { height: landY + 'px' }], fallOpts);
+            const fall = el.animate([
+                { transform: `translateY(${startY}px)` },
+                { transform: `translateY(${landY}px)` }
+            ], fallOpts);
+
+            fall.onfinish = () => {
+                // Паутинка отцепилась
+                thread.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' })
+                      .onfinish = () => thread.remove();
+
+                // Уползает в случайную сторону
+                setTimeout(() => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.hypot(W, H) + 100;
+                    const dx = Math.cos(angle) * dist;
+                    const dy = Math.sin(angle) * dist;
+                    const heading = angle * 180 / Math.PI + 90;
+                    const nx = -Math.sin(angle);
+                    const ny = Math.cos(angle);
+                    const steps = 14;
+                    const frames = [];
+                    for (let i = 0; i <= steps; i++) {
+                        const t = i / steps;
+                        const wob = Math.sin(i * 2.2) * 7;
+                        const px = dx * t + nx * wob;
+                        const py = landY + dy * t + ny * wob;
+                        const rot = heading + Math.sin(i * 2.2 + 1) * 14;
+                        frames.push({
+                            transform: `translate(${px}px, ${py}px) rotate(${rot}deg) scale(${1 + (i % 2) * 0.08})`,
+                            offset: t
+                        });
+                    }
+                    const speed = 200 + Math.random() * 220; // пикселей в секунду
+                    const crawl = el.animate(frames, { duration: dist / speed * 1000, easing: 'linear', fill: 'forwards' });
+                    crawl.onfinish = () => el.remove();
+                }, 250 + Math.random() * 700);
+            };
+        }
+
+        // Летучие мыши, время от времени пролетающие через экран
+        function startFlyingBats() {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const layer = document.createElement('div');
+            layer.className = 'hw-bats';
+            document.body.appendChild(layer);
+
+            function flyBat() {
+                if (document.hidden) return;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                const size = 34 + Math.random() * 34;
+                const fromLeft = Math.random() < 0.5;
+                const baseY = 20 + Math.random() * h * 0.55;
+                const startX = fromLeft ? -size - 20 : w + 20;
+                const endX = fromLeft ? w + 20 : -size - 20;
+                const steps = 8;
+                const frames = [];
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const x = startX + (endX - startX) * t;
+                    const y = baseY + Math.sin(t * Math.PI * 3) * 45 - t * 30;
+                    const rot = Math.cos(t * Math.PI * 3) * 14;
+                    frames.push({ transform: `translate(${x}px, ${y}px) rotate(${rot}deg)`, offset: t });
+                }
+                const bat = document.createElement('div');
+                bat.className = 'hw-bat';
+                bat.style.width = size + 'px';
+                bat.innerHTML = '<img src="hw3.png" alt="">';
+                layer.appendChild(bat);
+                const anim = bat.animate(frames, {
+                    duration: 8000 + Math.random() * 5000,
+                    easing: 'linear'
+                });
+                anim.onfinish = () => bat.remove();
+            }
+
+            setTimeout(flyBat, 1500);
+            setInterval(flyBat, 7000);
+        }
+
 // Функция для добавления новогоднего графика
 function addNewYearSchedule() {
     const today = new Date();
@@ -1085,7 +1805,7 @@ function addNewYearSchedule() {
     const currentDate = today.getDate();
     const currentYear = today.getFullYear();
     
-    const isNewYearHoliday = (currentMonth === 0 && (currentDate === 1 || currentDate === 2));
+    const isNewYearHoliday = isEventActive('newYear');
     
     if (!isNewYearHoliday) return;
     
@@ -1122,8 +1842,7 @@ function addVictoryDaySchedule() {
     const currentMonth = today.getMonth();
     const currentDate = today.getDate();
     
-    // Месяцы в JS начинаются с 0, поэтому май это 4
-    const isVictoryDay = (currentMonth === 4 && currentDate === 9);
+    const isVictoryDay = isEventActive('victoryDay');
     
     if (!isVictoryDay) return;
     
@@ -1155,22 +1874,22 @@ function addVictoryDaySchedule() {
     </script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
-    window.enableTracking = true;//бд / db
-    
     // ВЫЗОВ НОВОГОДНЕЙ ФУНКЦИИ
     addNewYearSchedule();
     // ВЫЗОВ ФУНКЦИИ ДЛЯ 9 МАЯ
     addVictoryDaySchedule();
+    // ХЭЛЛОУИН (26 октября – 2 ноября)
+    applyHalloween();
     
     const date = new Date();
     const month = date.getMonth();
     const currentDate = date.getDate();
-    const isWinter = (month === 0 || month === 1 || month === 11);
+    const isWinter = isEventActive('winter');
     
-    // Проверяем, сегодня 1 или 2 января
-    const isNewYearHoliday = (month === 0 && (currentDate === 1 || currentDate === 2));
-    // Проверяем, сегодня 9 мая
-    const isVictoryDay = (month === 4 && currentDate === 9);
+    // Проверяем, сегодня 1 или 2 января (даты – в SITE_EVENTS)
+    const isNewYearHoliday = isEventActive('newYear');
+    // Проверяем, сегодня 9 мая (даты – в SITE_EVENTS)
+    const isVictoryDay = isEventActive('victoryDay');
     
     // Подсветка текущего дня недели
     const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -1272,11 +1991,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let emojiInterval;
         
 // Эмодзи для разных времен года - идея взята с проекта: https://t.me/CWTools/2/28
+// (#эмзи)
 
 const emojis1 = ['🍁','🍂','🌰','🎃']; // Эмодзи для осени.
 const emojis2 = ['❄️','🍊','🎁','🍪','⭐️','🧊','⛄️','🎄','🥶','🎉','🌟','✨','🐧','💙','🥂','🍾']; // Эмодзи для зимы.
 const emojis3 = ['💧','🌼','🌸','🌷','💐','🌹','🌺','🐣','🌻','🍃','🌺','🐝','🦋']; // Эмодзи для весны.
 const emojis4 = ['🍦','☀️','🍎','🥥','🍍','🍓','🍒','🍉','🍈','🍋','🥭','🍏','🍹','🥝','🍸','🍨','🍧','🍇','🍑','🍌','💚','🧡','💛','🐠','🧃','🥤','🧉']; // Эмодзи для лета.
+const emojis5 = ['🎃','👻','🦇','🕷️','🕸️','💀','☠️','🧙‍♀️','🧛','🧟','🍬','🍭','🍫','🕯️','🌙','🦉','🔮','🍂']; // Эмодзи для Хэллоуина (26 октября – 2 ноября).
         
         // Анимация новогодней гирлянды
         function girNewYearsAnimation() {
@@ -1293,7 +2014,9 @@ const emojis4 = ['🍦','☀️','🍎','🥥','🍍','🍓','🍒','🍉','🍈
             
             // Определяем эмодзи в зависимости от времени года
             let emojis;
-            if (isWinter) {
+            if (isHalloween) {
+                emojis = emojis5;
+            } else if (isWinter) {
                 emojis = emojis2;
             } else if (month >= 2 && month <= 4) {
                 emojis = emojis3;
@@ -1726,8 +2449,8 @@ async function getUserInfo() {
         // Получаем разрешение экрана
         const resolution = `${window.screen.width}x${window.screen.height}`;
         
-        // Версия сайта
-        const version = 'v1.5.3-1 (Перенос)';
+        // Версия сайта (задаётся в SITE_VERSION в самом верху файла)
+        const version = SITE_VERSION;
         
         return {
             ip,
@@ -1747,7 +2470,7 @@ async function getUserInfo() {
             deviceType: 'Unknown',
             browser: 'Unknown',
             resolution: 'unknown',
-            version: 'v1.5.2.3',
+            version: SITE_VERSION,
             userAgent: navigator.userAgent.substring(0, 100),
             timestamp: new Date().toISOString()
         };
@@ -1788,5 +2511,682 @@ setTimeout(() => {
     trackVisits();
 }, 500);
     </script>
+<script>
+/* =====================================================================
+   🕷️ ИГРА «ПАУК-ПОЖИРАТЕЛЬ» (Хэллоуин)
+   ---------------------------------------------------------------------
+   • Паук нарисован кодом (SVG), лапки анимируются в зависимости от того,
+     стоит он или ползёт. Сидит на букве «Й» в заголовке «БУЛАЙЗ».
+   • ПК: стрелки – ползти, Пробел – кушать (зажать = кушать на ходу).
+   • Телефон: паук просто сидит на месте и «дышит», управления нет.
+   • Текст съедается по буквам, контейнеры и картинки – кусочками (по
+     траектории рта), остальное остаётся висеть, пока не будет съедено.
+   • Съеденные кнопки, ссылки и карта перестают работать.
+   • Диалоговое окно лежит поверх паука и не съедается.
+   ===================================================================== */
+(function () {
+    'use strict';
+    if (typeof isHalloween === 'undefined' || !isHalloween) return;
+
+    /* ---------------- НАСТРОЙКИ ---------------- */
+    const CFG = {
+        speed: 270,          // скорость ползания, px/с
+        turn: 14,            // как быстро паук поворачивается (больше = резче)
+        biteRadius: 13,      // радиус укуса (в «единицах» паука, ~px)
+        chompHz: 7,          // сколько раз в секунду паук «жуёт»
+        scrollMargin: 160    // за сколько px до края экрана страница начинает ехать за пауком
+    };
+
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const TAU = Math.PI * 2;
+
+    function start() {
+        const h1 = document.querySelector('.header h1');
+        const container = document.querySelector('.container');
+        if (!h1 || !container) return;
+
+        // Играть можно только на компьютере (мышь + клавиатура).
+        // На телефоне/планшете паук просто сидит: ни управления, ни счётчика, ни подсказки.
+        const canPlay = (function () {
+            const mm = q => window.matchMedia(q).matches;
+            const ua = navigator.userAgent || '';
+            const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Silk/i.test(ua) ||
+                             !!(navigator.userAgentData && navigator.userAgentData.mobile) ||
+                             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPad в режиме «как Mac»
+            const touchMain = mm('(pointer: coarse)') || mm('(hover: none)') ||
+                              (mm('(any-pointer: coarse)') && !mm('(any-pointer: fine)'));
+            return !mobileUA && !touchMain && mm('(pointer: fine)') && mm('(hover: hover)');
+        })();
+
+        const modal = document.getElementById('settingsModal');
+        const isModalOpen = () => !!(modal && modal.classList.contains('active'));
+
+        const fs = parseFloat(getComputedStyle(h1).fontSize) || 56;
+        const SIZE = clamp(fs * 1.85, 64, 112);   // размер паука в px
+        const K = SIZE / 100;                      // масштаб «единиц» паука в px
+
+        /* ============================================================
+           1. Что можно есть (только на компьютере)
+           ============================================================ */
+        const footerEl = document.querySelector('.footer');
+        const roots = canPlay ? [container, footerEl].filter(Boolean) : [];
+
+        /* ============================================================
+           2. ТЕКСТ ПО БУКВАМ: каждая буква – отдельный span
+           ============================================================ */
+        const segmenter = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('ru', { granularity: 'grapheme' }) : null;
+        const graphemes = s => segmenter ? Array.from(segmenter.segment(s), x => x.segment) : Array.from(s);
+
+        const tokens = [];   // все «съедобные» буквы и иконки
+
+        function tokenize(root) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(n) {
+                    if (!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    const p = n.parentElement;
+                    if (!p || p.closest('script, style, noscript, iframe, textarea, .sp-tn')) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(node => {
+                // Все буквы одного текстового узла лежат в одном span-обёртке:
+                // для flex-контейнеров это по-прежнему один элемент, вёрстка не ломается
+                const wrap = document.createElement('span');
+                wrap.className = 'sp-tn';
+                graphemes(node.nodeValue).forEach(g => {
+                    if (/^\s+$/.test(g)) {
+                        wrap.appendChild(document.createTextNode(g));
+                    } else {
+                        const s = document.createElement('span');
+                        s.className = 'sp-ch';
+                        s.textContent = g;
+                        wrap.appendChild(s);
+                        tokens.push({ el: s, gone: false, l: 0, t: 0, r: 0, b: 0 });
+                    }
+                });
+                node.replaceWith(wrap);
+            });
+            // Иконки Font Awesome (пустые <i>) – тоже съедобны, как одна «буква»
+            root.querySelectorAll('i[class*="fa-"]').forEach(ic => {
+                if (ic.textContent.trim()) return;
+                ic.classList.add('sp-ch');
+                tokens.push({ el: ic, gone: false, l: 0, t: 0, r: 0, b: 0 });
+            });
+        }
+        roots.forEach(tokenize);
+
+        /* ============================================================
+           3. ПАУК (SVG)
+           ============================================================ */
+        const layer = document.createElement('div');
+        layer.className = 'sp-layer';
+        const spiderEl = document.createElement('div');
+        spiderEl.className = 'sp-spider';
+        spiderEl.innerHTML =
+            '<svg class="sp-svg" viewBox="-50 -50 100 100" width="' + SIZE + '" height="' + SIZE + '" aria-hidden="true">' +
+              '<defs>' +
+                '<radialGradient id="sp-g-abd" cx="38%" cy="30%" r="78%">' +
+                  '<stop offset="0" stop-color="#7a4aa0"/><stop offset="0.5" stop-color="#2d1440"/><stop offset="1" stop-color="#0d0514"/>' +
+                '</radialGradient>' +
+                '<radialGradient id="sp-g-head" cx="40%" cy="30%" r="80%">' +
+                  '<stop offset="0" stop-color="#8a5ab0"/><stop offset="0.55" stop-color="#3a1c50"/><stop offset="1" stop-color="#150a1f"/>' +
+                '</radialGradient>' +
+                '<linearGradient id="sp-g-fang" x1="0" y1="1" x2="0" y2="0">' +
+                  '<stop offset="0" stop-color="#6b2a38"/><stop offset="0.45" stop-color="#e8dff0"/><stop offset="1" stop-color="#ffffff"/>' +
+                '</linearGradient>' +
+              '</defs>' +
+              '<g id="sp-rot">' +
+                '<path id="sp-legs-out" fill="none" stroke="#0a0410" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<path id="sp-legs-in" fill="none" stroke="#4a2862" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<g id="sp-abd">' +
+                  '<ellipse cx="0" cy="13" rx="20" ry="24" fill="url(#sp-g-abd)" stroke="#0a0410" stroke-width="1.3"/>' +
+                  '<path d="M-6.5 3 L6.5 3 L0 12.5 Z M-6.5 25 L6.5 25 L0 13.5 Z" fill="#ff8a1f"/>' +
+                  '<circle cx="-10.5" cy="9" r="1.9" fill="#ff8a1f"/><circle cx="10.5" cy="9" r="1.9" fill="#ff8a1f"/>' +
+                  '<circle cx="-9" cy="19" r="1.5" fill="#ffb454"/><circle cx="9" cy="19" r="1.5" fill="#ffb454"/>' +
+                  '<ellipse cx="-8" cy="1" rx="5" ry="9" fill="#fff" opacity="0.13" transform="rotate(-22 -8 1)"/>' +
+                '</g>' +
+                '<g id="sp-head">' +
+                  '<ellipse cx="0" cy="-14" rx="14" ry="13" fill="url(#sp-g-head)" stroke="#0a0410" stroke-width="1.3"/>' +
+                  '<ellipse cx="-5" cy="-19" rx="4" ry="2.6" fill="#fff" opacity="0.14" transform="rotate(-20 -5 -19)"/>' +
+                  '<g id="sp-eyes">' +
+                    '<circle cx="-4.8" cy="-19.5" r="3.7" fill="#fff"/><circle cx="4.8" cy="-19.5" r="3.7" fill="#fff"/>' +
+                    '<circle id="sp-pl" cx="-4.8" cy="-20.4" r="1.9" fill="#120418"/><circle id="sp-pr" cx="4.8" cy="-20.4" r="1.9" fill="#120418"/>' +
+                    '<circle cx="-4.2" cy="-21.1" r="0.7" fill="#fff"/><circle cx="5.4" cy="-21.1" r="0.7" fill="#fff"/>' +
+                    '<circle cx="-9.4" cy="-15.6" r="2.4" fill="#fff"/><circle cx="9.4" cy="-15.6" r="2.4" fill="#fff"/>' +
+                    '<circle cx="-9.4" cy="-16.1" r="1.2" fill="#120418"/><circle cx="9.4" cy="-16.1" r="1.2" fill="#120418"/>' +
+                    '<circle cx="-1.7" cy="-23.2" r="1.15" fill="#ffb454"/><circle cx="1.7" cy="-23.2" r="1.15" fill="#ffb454"/>' +
+                  '</g>' +
+                  '<ellipse id="sp-mouth" cx="0" cy="-25.5" rx="3" ry="1.4" fill="#2b060c"/>' +
+                  '<g id="sp-fl"><path d="M-2.3 0 C-2.8 -4 -1.7 -8 0 -11.5 C1.7 -8 2.8 -4 2.3 0 Z" fill="url(#sp-g-fang)" stroke="#0a0410" stroke-width="0.9"/></g>' +
+                  '<g id="sp-fr"><path d="M-2.3 0 C-2.8 -4 -1.7 -8 0 -11.5 C1.7 -8 2.8 -4 2.3 0 Z" fill="url(#sp-g-fang)" stroke="#0a0410" stroke-width="0.9"/></g>' +
+                '</g>' +
+              '</g>' +
+            '</svg>';
+        layer.appendChild(spiderEl);
+        document.body.appendChild(layer);
+
+        const svg = spiderEl.querySelector('svg');
+        const $ = id => svg.querySelector('#' + id);
+        const elRot = $('sp-rot'), elLegsOut = $('sp-legs-out'), elLegsIn = $('sp-legs-in');
+        const elAbd = $('sp-abd'), elHead = $('sp-head'), elEyes = $('sp-eyes');
+        const elMouth = $('sp-mouth'), elFL = $('sp-fl'), elFR = $('sp-fr');
+        const elPL = $('sp-pl'), elPR = $('sp-pr');
+
+        // Состояние паука
+        const S = {
+            x: 0, y: 0,
+            heading: 180,         // куда смотрит (0 = вверх, 90 = вправо, 180 = вниз)
+            walk: 0,              // 0..1 – насколько «идёт»
+            phase: 0,             // фаза шага
+            eat: 0,               // 0..1 – насколько «ест»
+            chomp: 0,             // фаза жевания
+            sitting: true,        // пока не двигался – следует за буквой «Й»
+            twitch: null,
+            nextTwitch: 2,
+            nextBlink: 3, blink: -1
+        };
+
+        // Геометрия лапок (правая сторона; левая – зеркально). Единицы паука.
+        const LEG_A = [[7, -12], [9, -5], [9, 3], [7, 11]];          // где лапка крепится
+        const LEG_F = [[38, -36], [47, -14], [47, 10], [37, 36]];    // где стоит стопа
+        const LEG_GROUP = [0, 1, 0, 1, 1, 0, 1, 0];                  // «тройная» походка: две группы по 4 лапки
+
+        function drawLegs(t) {
+            let dOut = '';
+            const stride = 14 * S.walk;
+            for (let i = 0; i < 8; i++) {
+                const side = i < 4 ? 1 : -1, j = i % 4;
+                const ax = LEG_A[j][0] * side, ay = LEG_A[j][1];
+                let fx = LEG_F[j][0] * side, fy = LEG_F[j][1];
+
+                // Тихое «дыхание» стоп, когда паук сидит
+                fx += Math.sin(t * 1.4 + i * 1.9) * 0.9 * side;
+                fy += Math.cos(t * 1.1 + i * 2.3) * 1.1;
+
+                // Ходьба
+                let lift = 0;
+                if (S.walk > 0.01) {
+                    const p = (S.phase + LEG_GROUP[i] * 0.5) % 1;
+                    fy += -stride * Math.cos(p * TAU);
+                    lift = S.walk * Math.max(0, -Math.sin(p * TAU));
+                    fx += side * lift * 3;
+                }
+
+                // Еда: передние лапки подносят «кусочек» ко рту
+                if (S.eat > 0.01 && j === 0) {
+                    fx = lerp(fx, side * 13, 0.62 * S.eat);
+                    fy = lerp(fy, -37 + 2.6 * Math.sin(S.chomp * TAU + (side > 0 ? 0 : 1.6)), 0.62 * S.eat);
+                    lift = Math.max(lift, S.eat * 0.5);
+                }
+
+                // Случайное «подёргивание» одной лапки
+                let extra = 0;
+                if (S.twitch && S.twitch.leg === i) {
+                    const u = (t - S.twitch.t0) / 0.8;
+                    if (u >= 1) { S.twitch = null; }
+                    else {
+                        const env = Math.sin(u * Math.PI);
+                        fx += side * 3.5 * env + Math.sin(u * 38) * 1.3 * env;
+                        fy += -4.5 * env;
+                        extra = env * 4;
+                        lift = Math.max(lift, env);
+                    }
+                }
+
+                // Колено: лапка из двух звеньев, колено выгибается наружу
+                const vx = fx - ax, vy = fy - ay, len = Math.hypot(vx, vy) || 1;
+                let nx = -vy / len, ny = vx / len;
+                if (nx * side < 0) { nx = -nx; ny = -ny; }
+                const bulge = 9 + lift * 5 + extra;
+                const kx = ax + vx * 0.5 + nx * bulge, ky = ay + vy * 0.5 + ny * bulge;
+                dOut += 'M' + ax.toFixed(1) + ' ' + ay.toFixed(1) +
+                        'L' + kx.toFixed(1) + ' ' + ky.toFixed(1) +
+                        'L' + fx.toFixed(1) + ' ' + fy.toFixed(1);
+            }
+            elLegsOut.setAttribute('d', dOut);
+            elLegsIn.setAttribute('d', dOut);
+        }
+
+        function drawBody(t, openAmt) {
+            // дыхание
+            const br = 1 + 0.025 * Math.sin(t * 2.1);
+            elAbd.setAttribute('transform', 'translate(0 5) scale(' + br.toFixed(3) + ') translate(0 -5)');
+            // голова чуть подаётся вперёд при укусе
+            const lunge = -1.8 * openAmt, hs = 1 + 0.05 * openAmt;
+            elHead.setAttribute('transform', 'translate(0 ' + lunge.toFixed(2) + ') translate(0 -14) scale(' + hs.toFixed(3) + ') translate(0 14)');
+            // жвалы: открываются и закрываются
+            const ang = -8 + 38 * openAmt;
+            elFL.setAttribute('transform', 'translate(-4.4 -24.5) rotate(' + (-ang).toFixed(1) + ')');
+            elFR.setAttribute('transform', 'translate(4.4 -24.5) rotate(' + ang.toFixed(1) + ')');
+            elMouth.setAttribute('rx', (3 + 4.5 * openAmt).toFixed(2));
+            elMouth.setAttribute('ry', (1.4 + 4.2 * openAmt).toFixed(2));
+            // моргание
+            let ey = 1;
+            if (S.blink >= 0) {
+                const u = (t - S.blink) / 0.16;
+                if (u >= 1) S.blink = -1; else ey = Math.max(0.08, Math.abs(1 - 2 * u));
+            } else if (t > S.nextBlink) { S.blink = t; S.nextBlink = t + rnd(2.5, 6); }
+            elEyes.setAttribute('transform', 'translate(0 -19) scale(1 ' + ey.toFixed(2) + ') translate(0 19)');
+            // зрачки чуть бегают
+            const lx = Math.sin(t * 0.8) * 0.7;
+            elPL.setAttribute('cx', (-4.8 + lx).toFixed(2));
+            elPR.setAttribute('cx', (4.8 + lx).toFixed(2));
+        }
+
+        /* ============================================================
+           4. КУСОЧКИ БЛОКОВ (clip-path)
+           ------------------------------------------------------------
+           У шапки, каждого блока и подвала свой SVG-клип. Съеденная
+           область – это набор прямоугольников-«дырок». Путь обновляется
+           на месте и синхронно (никаких картинок-масок, которые надо
+           догружать), поэтому сайт не моргает. Перерисовывается только
+           тот блок, который сейчас едят.
+           ============================================================ */
+        const CELL = 4;                                  // размер «клетки» укуса, px
+        const OUTER = 'M-4000 -4000H12000V12000H-4000Z'; // огромный внешний прямоугольник (украшения за краями не режутся)
+        const clipSvg = document.createElementNS(SVGNS, 'svg');
+        clipSvg.setAttribute('width', '0'); clipSvg.setAttribute('height', '0');
+        clipSvg.setAttribute('aria-hidden', 'true');
+        clipSvg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+        document.body.appendChild(clipSvg);
+
+        const clips = roots.length
+            ? Array.from(document.querySelectorAll('.header, .info-block, .footer')).map((el, i) => {
+                const cp = document.createElementNS(SVGNS, 'clipPath');
+                cp.setAttribute('id', 'sp-clip-' + i);
+                cp.setAttribute('clipPathUnits', 'userSpaceOnUse');
+                const path = document.createElementNS(SVGNS, 'path');
+                path.setAttribute('clip-rule', 'evenodd');
+                path.setAttribute('d', OUTER);
+                cp.appendChild(path);
+                clipSvg.appendChild(cp);
+                return { el, id: 'sp-clip-' + i, path, rows: new Map(), dirty: false, applied: false, x: 0, y: 0, w: 0, h: 0 };
+            })
+            : [];
+
+        // Добавляет отрезок [a, b) в отсортированный список непересекающихся отрезков
+        function addInterval(iv, a, b) {
+            let i = 0; const n = iv.length;
+            while (i < n && iv[i][1] < a) i++;
+            if (i < n && iv[i][0] <= a && iv[i][1] >= b) return false;      // уже съедено
+            let na = a, nb = b, j = i;
+            while (j < n && iv[j][0] <= b) { na = Math.min(na, iv[j][0]); nb = Math.max(nb, iv[j][1]); j++; }
+            iv.splice(i, j - i, [na, nb]);
+            return true;
+        }
+
+        // Круглый укус в координатах блока
+        function biteClip(c, cx, cy, r) {
+            let changed = false;
+            const y0 = Math.floor((cy - r) / CELL), y1 = Math.floor((cy + r) / CELL);
+            for (let ry = y0; ry <= y1; ry++) {
+                const dy = (ry + 0.5) * CELL - cy;
+                if (Math.abs(dy) > r) continue;
+                const dx = Math.sqrt(r * r - dy * dy);
+                const x0 = Math.floor((cx - dx) / CELL), x1 = Math.ceil((cx + dx) / CELL);
+                if (x1 <= x0) continue;
+                let row = c.rows.get(ry);
+                if (!row) c.rows.set(ry, row = { iv: [], sig: null });
+                if (addInterval(row.iv, x0, x1)) { row.sig = null; changed = true; }
+            }
+            if (changed) c.dirty = true;
+            return changed;
+        }
+
+        // Собирает путь клипа (раз в кадр, только для изменившихся блоков)
+        function flushClips() {
+            for (const c of clips) {
+                if (!c.dirty) continue;
+                c.dirty = false;
+                const keys = Array.from(c.rows.keys()).sort((p, q) => p - q);
+                keys.forEach(k => { const r = c.rows.get(k); if (r.sig === null) r.sig = r.iv.map(v => v[0] + ':' + v[1]).join(','); });
+                let d = OUTER, i = 0;
+                while (i < keys.length) {
+                    let j = i;
+                    const row = c.rows.get(keys[i]);
+                    // одинаковые соседние строки склеиваем в один высокий прямоугольник
+                    while (j + 1 < keys.length && keys[j + 1] === keys[j] + 1 && c.rows.get(keys[j + 1]).sig === row.sig) j++;
+                    const y = keys[i] * CELL, h = (j - i + 1) * CELL;
+                    for (const v of row.iv) {
+                        const w = (v[1] - v[0]) * CELL;
+                        d += 'M' + (v[0] * CELL) + ' ' + y + 'h' + w + 'v' + h + 'h' + (-w) + 'z';
+                    }
+                    i = j + 1;
+                }
+                c.path.setAttribute('d', d);
+                if (!c.applied) {
+                    c.applied = true;
+                    c.el.style.webkitClipPath = c.el.style.clipPath = 'url(#' + c.id + ')';
+                }
+            }
+        }
+
+        /* ============================================================
+           5. КНОПКИ, ССЫЛКИ, КАРТА: съеденное перестаёт работать
+           ============================================================ */
+        const interactives = roots.length
+            ? roots.flatMap(r => Array.from(r.querySelectorAll('a[href], button, [onclick]')))
+                   .map(el => ({ el, rects: [], dead: false }))
+            : [];
+
+        function killInteractive(it) {
+            it.dead = true;
+            const el = it.el;
+            el.classList.add('sp-dead');
+            if (el.tagName === 'BUTTON') el.disabled = true;
+            if (el.tagName === 'A') { el.removeAttribute('href'); el.setAttribute('aria-disabled', 'true'); }
+            el.setAttribute('tabindex', '-1');
+            el.removeAttribute('onclick');
+            el.onclick = null;
+            if (document.activeElement === el) el.blur();
+        }
+
+        /* ============================================================
+           6. РАСКЛАДКА: размеры, координаты букв и блоков
+           ============================================================ */
+        let docW = 0, docH = 0;
+        const GRID = 64;
+        let grid = new Map();
+
+        function findLetterRect(el, letter) {
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            let n;
+            while ((n = walker.nextNode())) {
+                let off = 0;
+                for (const g of graphemes(n.nodeValue)) {
+                    if (g.normalize('NFC') === letter) {
+                        const r = document.createRange();
+                        r.setStart(n, off); r.setEnd(n, off + g.length);
+                        const b = r.getBoundingClientRect();
+                        if (b.width) return b;
+                    }
+                    off += g.length;
+                }
+            }
+            return null;
+        }
+
+        function placeOnLetter() {
+            const b = findLetterRect(h1, 'Й') || h1.getBoundingClientRect();
+            S.x = b.left + window.scrollX + b.width / 2;
+            S.y = b.top + window.scrollY + b.height / 2 + fs * 0.04;
+        }
+
+        function recalc() {
+            const sx = window.scrollX, sy = window.scrollY;
+
+            if (canPlay) {
+                clips.forEach(c => {
+                    const r = c.el.getBoundingClientRect();
+                    c.x = r.left + sx; c.y = r.top + sy; c.w = r.width; c.h = r.height;
+                });
+
+                interactives.forEach(it => {
+                    if (it.dead) return;
+                    it.rects = Array.from(it.el.getClientRects()).map(r => ({ l: r.left + sx, t: r.top + sy, r: r.right + sx, b: r.bottom + sy }));
+                });
+
+                grid = new Map();
+                tokens.forEach(tk => {
+                    const r = tk.el.getBoundingClientRect();
+                    if (!r.width && !r.height) { tk.l = tk.r = tk.t = tk.b = -1e9; return; }
+                    tk.l = r.left + sx - 1; tk.r = r.right + sx + 1;
+                    tk.t = r.top + sy - 1;  tk.b = r.bottom + sy + 1;
+                    for (let cx = Math.floor(tk.l / GRID); cx <= Math.floor(tk.r / GRID); cx++) {
+                        for (let cy = Math.floor(tk.t / GRID); cy <= Math.floor(tk.b / GRID); cy++) {
+                            const key = cx + ',' + cy;
+                            let arr = grid.get(key);
+                            if (!arr) grid.set(key, arr = []);
+                            arr.push(tk);
+                        }
+                    }
+                });
+            }
+
+            docW = document.documentElement.clientWidth;
+            docH = Math.max(document.body.offsetHeight, window.innerHeight);
+            layer.style.height = docH + 'px';
+
+            if (S.sitting) placeOnLetter();
+        }
+
+        /* ============================================================
+           6.5. ПОЕДАНИЕ
+           ============================================================ */
+        let score = 0, scoreDirty = false;
+        const hud = document.createElement('div');
+        let hudScore = null;
+
+        const DYN = '#emojiContainer .emoji, .hw-bat, .hw-rain-spider, .hw-spider';
+        const CRUMB_COLORS = ['#ff8a1f', '#ffb454', '#f3e5ff', '#b66bff'];
+        let crumbCount = 0;
+
+        function crumbs(x, y, n) {
+            for (let i = 0; i < n && crumbCount < 60; i++) {
+                const c = document.createElement('span');
+                c.className = 'sp-crumb';
+                c.style.left = x + 'px'; c.style.top = y + 'px';
+                c.style.background = CRUMB_COLORS[(Math.random() * CRUMB_COLORS.length) | 0];
+                layer.appendChild(c);
+                crumbCount++;
+                const a = rnd(0, TAU), d = rnd(14, 42);
+                const an = c.animate([
+                    { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+                    { transform: 'translate(calc(-50% + ' + Math.cos(a) * d + 'px), calc(-50% + ' + Math.sin(a) * d + 'px)) scale(0.2)', opacity: 0 }
+                ], { duration: rnd(350, 650), easing: 'cubic-bezier(.2,.7,.3,1)' });
+                an.onfinish = () => { c.remove(); crumbCount--; };
+            }
+        }
+
+        function circleRect(cx, cy, r, l, t, rr, b) {
+            const dx = cx - clamp(cx, l, rr), dy = cy - clamp(cy, t, b);
+            return dx * dx + dy * dy <= r * r;
+        }
+
+        // Один «укус» в точке (x, y) (координаты страницы)
+        function stamp(x, y, r) {
+            let eaten = 0, onBlock = false;
+
+            // буквы
+            for (let cx = Math.floor((x - r) / GRID); cx <= Math.floor((x + r) / GRID); cx++) {
+                for (let cy = Math.floor((y - r) / GRID); cy <= Math.floor((y + r) / GRID); cy++) {
+                    const arr = grid.get(cx + ',' + cy);
+                    if (!arr) continue;
+                    for (const tk of arr) {
+                        if (tk.gone || !circleRect(x, y, r, tk.l, tk.t, tk.r, tk.b)) continue;
+                        tk.gone = true;
+                        tk.el.classList.add('sp-gone');
+                        eaten++;
+                    }
+                }
+            }
+
+            // кусочки блоков, картинок, карты
+            for (const c of clips) {
+                const m = 60;   // украшения торчат за края блока, поэтому берём запас
+                if (x < c.x - m || x > c.x + c.w + m || y < c.y - m || y > c.y + c.h + m) continue;
+                if (biteClip(c, x - c.x, y - c.y, r) &&
+                    x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) onBlock = true;
+            }
+
+            // кнопки и ссылки: коснулся – перестали работать
+            for (const it of interactives) {
+                if (it.dead) continue;
+                for (const q of it.rects) {
+                    if (circleRect(x, y, r, q.l, q.t, q.r, q.b)) { killInteractive(it); break; }
+                }
+            }
+
+            if (eaten) { score += eaten; scoreDirty = true; crumbs(x, y, Math.min(6, 1 + eaten)); }
+            else if (onBlock && Math.random() < 0.35) crumbs(x, y, 1);
+        }
+
+        let lastMouth = null;
+        function eatAt(mx, my) {
+            const r = CFG.biteRadius * K;
+            const pts = [];
+            if (lastMouth) {
+                const dx = mx - lastMouth.x, dy = my - lastMouth.y, dist = Math.hypot(dx, dy);
+                const steps = Math.max(1, Math.ceil(dist / (r * 0.5)));   // без «пропусков» между укусами
+                for (let i = 1; i <= steps; i++) pts.push([lastMouth.x + dx * i / steps, lastMouth.y + dy * i / steps]);
+            } else {
+                pts.push([mx, my]);
+            }
+            lastMouth = { x: mx, y: my };
+
+            // 1) читаем положения летающих эмодзи/мышей (один раз за кадр, до любых изменений DOM)
+            const vx0 = window.scrollX, vy0 = window.scrollY;
+            const flying = Array.from(document.querySelectorAll(DYN)).filter(el => !el.__spEaten).map(el => {
+                const b = el.getBoundingClientRect();
+                return { el, l: b.left + vx0, t: b.top + vy0, r: b.right + vx0, b: b.bottom + vy0 };
+            });
+
+            // 2) едим
+            for (const p of pts) {
+                stamp(p[0], p[1], r);
+                for (const f of flying) {
+                    if (f.el.__spEaten || !circleRect(p[0], p[1], r, f.l, f.t, f.r, f.b)) continue;
+                    f.el.__spEaten = true;
+                    f.el.remove();
+                    score++; scoreDirty = true;
+                    crumbs(p[0], p[1], 3);
+                }
+            }
+        }
+
+        /* ============================================================
+           7. УПРАВЛЕНИЕ
+           ============================================================ */
+        const keys = { up: false, down: false, left: false, right: false, space: false };
+        const KEYMAP = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Space: 'space' };
+
+        if (canPlay) {
+            window.addEventListener('keydown', e => {
+                const k = KEYMAP[e.code];
+                if (!k || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (isModalOpen()) return;   // в диалоге клавиши работают как обычно
+                const t = e.target;
+                if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+                e.preventDefault();
+                // чтобы пробел не «нажал» кнопку, на которой остался фокус (например, шестерёнку)
+                const ae = document.activeElement;
+                if (ae && ae !== document.body && ae.blur) ae.blur();
+                keys[k] = true;
+                if (k === 'space') hud.classList.add('compact');
+            });
+            window.addEventListener('keyup', e => {
+                const k = KEYMAP[e.code];
+                if (!k) return;
+                keys[k] = false;
+                if (!isModalOpen()) e.preventDefault();
+            });
+            window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+
+            // Счётчик и подсказка
+            hud.id = 'sp-hud';
+            hud.innerHTML = '<span>🕷️ Съедено: <b id="sp-score">0</b></span>' +
+                            '<span class="sp-hud-hint">← ↑ ↓ → ползти · Пробел — кушать</span>';
+            document.body.appendChild(hud);
+            hudScore = hud.querySelector('#sp-score');
+            setTimeout(() => hud.classList.add('compact'), 9000);
+        }
+
+        /* ============================================================
+           8. ГЛАВНЫЙ ЦИКЛ
+           ============================================================ */
+        let tPrev = performance.now(), time = 0;
+
+        function frame(now) {
+            requestAnimationFrame(frame);
+            const dt = Math.min(0.05, (now - tPrev) / 1000);
+            tPrev = now;
+            if (dt <= 0) return;
+            time += dt;
+
+            const active = canPlay && !isModalOpen();
+            const ax = active ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
+            const ay = active ? (keys.down ? 1 : 0) - (keys.up ? 1 : 0) : 0;
+            const moving = ax !== 0 || ay !== 0;
+            const eating = active && keys.space;
+
+            // движение
+            if (moving) {
+                S.sitting = false;
+                const n = Math.hypot(ax, ay);
+                const target = Math.atan2(ax, -ay) * 180 / Math.PI;
+                const d = ((target - S.heading + 540) % 360) - 180;
+                S.heading += d * Math.min(1, CFG.turn * dt);
+                const pad = 22 * K;
+                S.x = clamp(S.x + ax / n * CFG.speed * dt, pad, Math.max(pad, docW - pad));
+                S.y = clamp(S.y + ay / n * CFG.speed * dt, pad, Math.max(pad, docH - pad));
+                S.phase = (S.phase + CFG.speed * dt / (56 * K)) % 1;
+            }
+            S.walk += ((moving ? 1 : 0) - S.walk) * Math.min(1, 10 * dt);
+
+            // жевание
+            S.eat += ((eating ? 1 : 0) - S.eat) * Math.min(1, 14 * dt);
+            S.chomp = (S.chomp + dt * CFG.chompHz * S.eat) % 1000;
+            const open = S.eat * (0.5 + 0.5 * Math.sin(S.chomp * TAU)) + 0.05 * Math.pow(Math.sin(time * 1.7), 2) * (1 - S.eat);
+
+            // случайное подёргивание лапки, пока паук сидит
+            if (!moving && !eating && !S.twitch && time > S.nextTwitch) {
+                S.twitch = { leg: (Math.random() * 8) | 0, t0: time };
+                S.nextTwitch = time + rnd(1.8, 4.5);
+            }
+
+            // поедание: рот находится впереди паука
+            if (eating) {
+                const hr = S.heading * Math.PI / 180;
+                eatAt(S.x + Math.sin(hr) * 31 * K, S.y - Math.cos(hr) * 31 * K);
+            } else {
+                lastMouth = null;
+            }
+
+            // страница едет за пауком
+            if (moving) {
+                const m = Math.min(CFG.scrollMargin, window.innerHeight * 0.3);
+                const vy = S.y - window.scrollY;
+                let ty = window.scrollY;
+                if (vy < m) ty = S.y - m;
+                else if (vy > window.innerHeight - m) ty = S.y - window.innerHeight + m;
+                ty = clamp(ty, 0, Math.max(0, docH - window.innerHeight));
+                if (Math.abs(ty - window.scrollY) > 0.5) {
+                    window.scrollTo({ left: window.scrollX, top: window.scrollY + (ty - window.scrollY) * Math.min(1, 10 * dt), behavior: 'instant' });
+                }
+            }
+
+            // отрисовка
+            spiderEl.style.transform = 'translate3d(' + (S.x - SIZE / 2).toFixed(1) + 'px,' + (S.y - SIZE / 2).toFixed(1) + 'px,0)';
+            elRot.setAttribute('transform', 'rotate(' + S.heading.toFixed(1) + ')');
+            drawLegs(time);
+            drawBody(time, open);
+
+            flushClips();
+            if (scoreDirty && hudScore) { hudScore.textContent = score; scoreDirty = false; }
+        }
+
+        /* ============================================================
+           9. ЗАПУСК
+           ============================================================ */
+        recalc();
+        requestAnimationFrame(f => { tPrev = f; requestAnimationFrame(frame); });
+
+        let rt = null;
+        const scheduleRecalc = () => { clearTimeout(rt); rt = setTimeout(recalc, 120); };
+        window.addEventListener('resize', scheduleRecalc);
+        window.addEventListener('load', recalc);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(recalc);
+        if (window.ResizeObserver) new ResizeObserver(scheduleRecalc).observe(document.body);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+})();
+</script>
 </body>
 </html>
